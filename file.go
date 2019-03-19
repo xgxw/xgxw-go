@@ -9,6 +9,7 @@ type File struct {
 	gorm.Model
 	Name string `json:"name" gorm:"column:name"`
 	URL  string `json:"url" gorm:"column:url"`
+	Size int    `json:"size" gorm:"column:size"`
 }
 
 // FileService is ...

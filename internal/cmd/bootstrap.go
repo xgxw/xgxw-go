@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/everywan/xgxw"
 	"github.com/everywan/xgxw/internal/services"
 
 	"github.com/everywan/foundation-go/database"
@@ -12,9 +13,12 @@ import (
 
 // Bootstrap 公用实例初始化
 type Bootstrap struct {
-	Logger   *flog.Logger
-	Database *database.MysqlDB
-	FileSvc  *services.FileService
+	Logger    *flog.Logger
+	Database  *database.MysqlDB
+	FileSvc   xgxw.FileService
+	UserSvc   xgxw.UserService
+	TodoSvc   xgxw.TodoService
+	ResumeSvc xgxw.ResumeService
 }
 
 // NewBootstrap is ...
@@ -24,10 +28,15 @@ func NewBootstrap(opts ApplicationOps) (*Bootstrap, error) {
 	handleInitError("database", err)
 	logger := flog.NewLogger(opts.Logger, os.Stdout)
 	fileSvc := services.NewFileService(db, logger)
+	userSvc := services.NewFileService(db, logger)
+	todoSvc := services.NewTodoService(db, logger, fileSvc, userSvc)
+	resumeSvc := services.NewResumeService(db, logger, fileSvc, userSvc)
 	return &Bootstrap{
-		Logger:   logger,
-		Database: db,
-		FileSvc:  fileSvc,
+		Logger:    logger,
+		Database:  db,
+		FileSvc:   fileSvc,
+		TodoSvc:   todoSvc,
+		ResumeSvc: resumeSvc,
 	}, nil
 }
 

@@ -31,7 +31,8 @@ var serverCmd = &cobra.Command{
 			return c.String(http.StatusOK, "enjoy yourself!")
 		})
 		v1 := e.Group("/v1")
-		v1.GET("/todo.md", todoController.GetTodo)
+		v1.GET("/todo/:id", todoController.GetTodo)
+		v1.GET("/todos", todoController.GetTodos)
 		go func() {
 			// 当程序较多/HTTP设置较多时, 可以单独封装Server组件, 在组件内计算这些值
 			address := fmt.Sprintf("%s:%d", opts.Server.HTTP.Host, opts.Server.HTTP.Port)
