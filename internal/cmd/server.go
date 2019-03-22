@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/everywan/xgxw/internal/controllers"
+	"github.com/everywan/xgxw/internal/middlewares"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/spf13/cobra"
@@ -21,18 +22,23 @@ var serverCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		opts := loadApplocationOps()
 
-		bootstrap, err := NewBootstrap(opts)
+		boot, err := newBootstrap(opts)
 		handleInitError("bootstarp", err)
-		todoController := controllers.NewTodoController(bootstrap.FileSvc)
+		todoController := controllers.NewTodoController(boot.FileSvc, boot.TodoSvc)
 
 		e := echo.New()
+		e.Use(middlewares.NewJWTMiddlewares())
 		e.Use(middleware.Logger())
+
 		e.GET("/", func(c echo.Context) error {
 			return c.String(http.StatusOK, "enjoy yourself!")
 		})
+
 		v1 := e.Group("/v1")
-		v1.GET("/todo/:id", todoController.GetTodo)
-		v1.GET("/todos", todoController.GetTodos)
+		todo := v1.Group("/todo")
+		todo.GET("/:id", todoController.GetTodo)
+		todo.GET("/s", todoController.GetTodos)
+
 		go func() {
 			// 当程序较多/HTTP设置较多时, 可以单独封装Server组件, 在组件内计算这些值
 			address := fmt.Sprintf("%s:%d", opts.Server.HTTP.Host, opts.Server.HTTP.Port)

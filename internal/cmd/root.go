@@ -65,8 +65,8 @@ func (opts *ApplicationOps) Load() {
 	}
 }
 
-func loadApplocationOps() ApplicationOps {
-	opts := ApplicationOps{}
+func loadApplocationOps() *ApplicationOps {
+	opts := &ApplicationOps{}
 	opts.Load()
 	return opts
 }

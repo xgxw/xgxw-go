@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/everywan/xgxw"
+	"github.com/everywan/xgxw/internal/constants"
 	"github.com/labstack/echo"
 )
 
@@ -32,7 +33,10 @@ func (e *TodoController) GetTodo(ctx echo.Context) error {
 	}
 	_id, _ := strconv.ParseUint(id, 10, 32)
 	// 在中间件校验 user_id 存在且通过 ctx.set 设置
-	userID := ctx.Get("user_id").(uint)
+	// if ctx.Get("user_id") == nil {
+	// 	return ctx.NoContent(http.StatusUnauthorized)
+	// }
+	userID := ctx.Get(constants.UserID).(uint)
 	todo, err := e.todoSvc.GetTodo(uint(_id), userID)
 	if err != nil {
 		return ctx.NoContent(http.StatusNotFound)
@@ -42,7 +46,7 @@ func (e *TodoController) GetTodo(ctx echo.Context) error {
 
 // GetTodos is ..
 func (e *TodoController) GetTodos(ctx echo.Context) error {
-	userID := ctx.Get("user_id").(uint)
+	userID := ctx.Get(constants.UserID).(uint)
 	todos, err := e.todoSvc.GetTodos(userID)
 	if err != nil {
 		return ctx.NoContent(http.StatusNotFound)

@@ -12,7 +12,7 @@ import (
 )
 
 // Bootstrap 公用实例初始化
-type Bootstrap struct {
+type bootstrap struct {
 	Logger    *flog.Logger
 	Database  *database.MysqlDB
 	FileSvc   xgxw.FileService
@@ -21,8 +21,7 @@ type Bootstrap struct {
 	ResumeSvc xgxw.ResumeService
 }
 
-// NewBootstrap is ...
-func NewBootstrap(opts ApplicationOps) (*Bootstrap, error) {
+func newBootstrap(opts *ApplicationOps) (*bootstrap, error) {
 	// Register
 	db, err := database.NewMysqlDatabase(opts.Database.Mysql)
 	handleInitError("database", err)
@@ -31,7 +30,7 @@ func NewBootstrap(opts ApplicationOps) (*Bootstrap, error) {
 	userSvc := services.NewFileService(db, logger)
 	todoSvc := services.NewTodoService(db, logger, fileSvc, userSvc)
 	resumeSvc := services.NewResumeService(db, logger, fileSvc, userSvc)
-	return &Bootstrap{
+	return &bootstrap{
 		Logger:    logger,
 		Database:  db,
 		FileSvc:   fileSvc,
