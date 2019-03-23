@@ -19,6 +19,7 @@ type bootstrap struct {
 	UserSvc   xgxw.UserService
 	TodoSvc   xgxw.TodoService
 	ResumeSvc xgxw.ResumeService
+	Options   *ApplicationOps
 }
 
 func newBootstrap(opts *ApplicationOps) (*bootstrap, error) {
@@ -36,6 +37,7 @@ func newBootstrap(opts *ApplicationOps) (*bootstrap, error) {
 		FileSvc:   fileSvc,
 		TodoSvc:   todoSvc,
 		ResumeSvc: resumeSvc,
+		Options:   opts,
 	}, nil
 }
 

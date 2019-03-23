@@ -3,6 +3,7 @@ package middlewares
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -13,8 +14,14 @@ var jwtMid = JWTMiddleware{
 }
 
 func Test_JWTMiddleware_signToken(t *testing.T) {
-	fmt.Println(jwtMid.signToken(&payloadJWT{}))
+	expires := time.Now().Add(time.Hour)
+	standClaims := new(jwt.StandardClaims)
+	standClaims.ExpiresAt = expires.Unix()
+	fmt.Println(jwtMid.signToken(&payloadClaims{
+		UserID:         1,
+		StandardClaims: standClaims,
+	}))
 }
 func Test_JWTMiddleware_verifyToken(t *testing.T) {
-	fmt.Println(jwtMid.verifyToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoid3pzIn0.821WO5tagyM8dKQpZ8fms4seR19XNus_vwfN4TqrP0g"))
+	fmt.Println(jwtMid.verifyToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoid3pzIn0.aICvPf2gQV7bNSVB5wBNax1keQCoi7iHev-5ak8Jlvs"))
 }

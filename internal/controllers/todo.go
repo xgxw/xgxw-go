@@ -32,10 +32,6 @@ func (e *TodoController) GetTodo(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusNotFound)
 	}
 	_id, _ := strconv.ParseUint(id, 10, 32)
-	// 在中间件校验 user_id 存在且通过 ctx.set 设置
-	// if ctx.Get("user_id") == nil {
-	// 	return ctx.NoContent(http.StatusUnauthorized)
-	// }
 	userID := ctx.Get(constants.UserID).(uint)
 	todo, err := e.todoSvc.GetTodo(uint(_id), userID)
 	if err != nil {

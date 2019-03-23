@@ -6,6 +6,7 @@ import (
 
 	"github.com/everywan/foundation-go/database"
 	flog "github.com/everywan/foundation-go/log"
+	"github.com/everywan/xgxw/internal/middlewares"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -50,9 +51,10 @@ type (
 	}
 	// ApplicationOps is ...
 	ApplicationOps struct {
-		Logger   flog.Options `mapstructure:"logger" yaml:"logger"`
-		Database DatabaseOps  `mapstructure:"database" yaml:"database"`
-		Server   ServerOps    `mapstructure:"server" yaml:"server"`
+		Logger   flog.Options                      `mapstructure:"logger" yaml:"logger"`
+		Database DatabaseOps                       `mapstructure:"database" yaml:"database"`
+		Server   ServerOps                         `mapstructure:"server" yaml:"server"`
+		Auth     middlewares.AuthenticationOptions `mapstructure:"auth" yaml:"auth"`
 	}
 )
 

@@ -27,7 +27,7 @@ var serverCmd = &cobra.Command{
 		todoController := controllers.NewTodoController(boot.FileSvc, boot.TodoSvc)
 
 		e := echo.New()
-		e.Use(middlewares.NewJWTMiddlewares())
+		e.Use(middlewares.NewJWTMiddlewares(boot.Logger, boot.Options.Auth))
 		e.Use(middleware.Logger())
 
 		e.GET("/", func(c echo.Context) error {
