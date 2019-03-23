@@ -27,7 +27,7 @@ var serverCmd = &cobra.Command{
 		todoController := controllers.NewTodoController(boot.FileSvc, boot.TodoSvc)
 
 		e := echo.New()
-		e.Use(middlewares.NewJWTMiddlewares(boot.Logger, boot.Options.Auth))
+		jwtMiddleware := middlewares.NewJWTMiddlewares(boot.Logger, boot.Options.Auth)
 		e.Use(middleware.Logger())
 
 		e.GET("/", func(c echo.Context) error {
@@ -35,7 +35,7 @@ var serverCmd = &cobra.Command{
 		})
 
 		v1 := e.Group("/v1")
-		todo := v1.Group("/todo")
+		todo := v1.Group("/todo", jwtMiddleware)
 		todo.GET("/:id", todoController.GetTodo)
 		todo.GET("/s", todoController.GetTodos)
 
