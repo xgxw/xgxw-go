@@ -35,9 +35,12 @@ var serverCmd = &cobra.Command{
 		})
 
 		v1 := e.Group("/v1")
-		todo := v1.Group("/todo", jwtMiddleware)
-		todo.GET("/:id", todoController.GetTodo)
-		todo.GET("/s", todoController.GetTodos)
+
+		{
+			todo := v1.Group("/todo", jwtMiddleware)
+			todo.GET("/:id", todoController.GetTodo)
+			todo.GET("/s", todoController.GetTodos)
+		}
 
 		go func() {
 			// 当程序较多/HTTP设置较多时, 可以单独封装Server组件, 在组件内计算这些值
