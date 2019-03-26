@@ -4,6 +4,7 @@ import (
 	"github.com/everywan/foundation-go/database"
 	flog "github.com/everywan/foundation-go/log"
 	"github.com/everywan/xgxw"
+	"github.com/everywan/xgxw/internal/codes"
 )
 
 // TodoService is ...
@@ -31,6 +32,9 @@ var _ xgxw.TodoService = &TodoService{}
 func (t *TodoService) GetTodo(id, userID uint) (todo *xgxw.Todo, err error) {
 	todo = &xgxw.Todo{}
 	err = t.db.Where("id=? and user_id=?", id, userID).First(todo).Error
+	if err == database.ErrDBRecordNotFound {
+		return todo, codes.RecordNotFoundErr
+	}
 	return todo, err
 }
 
