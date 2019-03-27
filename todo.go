@@ -17,6 +17,6 @@ type Todo struct {
 
 // TodoService is ...
 type TodoService interface {
-	GetTodo(id, userID uint) (todo *Todo, err error)
+	Get(id, userID uint) (todo *Todo, err error)
 	GetTodos(userID uint) (todos []*Todo, err error)
 }

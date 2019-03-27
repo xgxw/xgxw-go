@@ -26,14 +26,14 @@ func NewTodoController(fileSvc xgxw.FileService, todoSvc xgxw.TodoService) *Todo
 }
 
 // GetTodo is 获取Todo.md
-func (e *TodoController) GetTodo(ctx echo.Context) error {
+func (e *TodoController) Get(ctx echo.Context) error {
 	id := ctx.Param("id")
 	if id == "" {
 		return ctx.NoContent(http.StatusNotFound)
 	}
 	_id, _ := strconv.ParseUint(id, 10, 32)
 	userID := ctx.Get(constants.UserID).(uint)
-	todo, err := e.todoSvc.GetTodo(uint(_id), userID)
+	todo, err := e.todoSvc.Get(uint(_id), userID)
 	if err != nil {
 		return ctx.NoContent(http.StatusNotFound)
 	}

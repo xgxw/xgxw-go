@@ -38,7 +38,7 @@ var serverCmd = &cobra.Command{
 
 		{
 			todo := v1.Group("/todo", jwtMiddleware)
-			todo.GET("/:id", todoController.GetTodo)
+			todo.GET("/:id", todoController.Get)
 			todo.GET("/s", todoController.GetTodos)
 		}
 

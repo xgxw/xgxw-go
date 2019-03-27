@@ -29,7 +29,7 @@ func NewTodoService(db *database.MysqlDB, logger *flog.Logger, fileSvc xgxw.File
 var _ xgxw.TodoService = &TodoService{}
 
 // GetTodo is ...
-func (t *TodoService) GetTodo(id, userID uint) (todo *xgxw.Todo, err error) {
+func (t *TodoService) Get(id, userID uint) (todo *xgxw.Todo, err error) {
 	todo = &xgxw.Todo{}
 	err = t.db.Where("id=? and user_id=?", id, userID).First(todo).Error
 	if err == database.ErrDBRecordNotFound {
