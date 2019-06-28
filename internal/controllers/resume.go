@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"context"
 	"net/http"
 
+	flog "github.com/everywan/foundation-go/log"
 	"github.com/everywan/xgxw"
 	"github.com/labstack/echo"
 )
@@ -10,22 +12,43 @@ import (
 type (
 	// ResumeController is ...
 	ResumeController struct {
-		fileSvc xgxw.FileService
+		logger    *flog.Logger
+		resumeSvc xgxw.ResumeService
 	}
 )
 
 // NewResumeController is ...
-func NewResumeController(fileSvc xgxw.FileService) *ResumeController {
+func NewResumeController(logger *flog.Logger, resumeSvc xgxw.ResumeService) *ResumeController {
 	return &ResumeController{
-		fileSvc: fileSvc,
+		logger:    logger,
+		resumeSvc: resumeSvc,
 	}
 }
 
-// GetResume is ...
-func (e *ResumeController) GetResume(ctx echo.Context) error {
-	file, err := e.fileSvc.GetFile("2")
+// Get is ...
+func (e *ResumeController) Get(ctx echo.Context) error {
+	resume, err := e.resumeSvc.Get(context.Background())
 	if err != nil {
+		e.logger.Error(err)
 		return ctx.NoContent(http.StatusNotFound)
 	}
-	return ctx.String(http.StatusOK, file.URL)
+	return ctx.JSON(http.StatusOK, resume)
+}
+
+// Put is ...
+func (e *ResumeController) Put(ctx echo.Context) error {
+	type requestCarrier struct {
+		Content string `json:"content" form:"content" query:"content"`
+	}
+	r := new(requestCarrier)
+	if err := ctx.Bind(r); err != nil {
+		e.logger.Error(err)
+		return ctx.String(http.StatusBadRequest, "please input content")
+	}
+	err := e.resumeSvc.Put(context.Background(), r.Content)
+	if err != nil {
+		e.logger.Error(err)
+		return ctx.NoContent(http.StatusNotFound)
+	}
+	return ctx.NoContent(http.StatusOK)
 }

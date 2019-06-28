@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/everywan/foundation-go/database"
 	flog "github.com/everywan/foundation-go/log"
+	fstorage "github.com/everywan/foundation-go/storage"
 	"github.com/everywan/xgxw/internal/middlewares"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -45,16 +45,12 @@ func initConfig() {
 }
 
 type (
-	// DatabaseOps is 数据库配置
-	DatabaseOps struct {
-		Mysql database.MysqlOptions `mapstructure:"mysql" yaml:"mysql"`
-	}
 	// ApplicationOps is ...
 	ApplicationOps struct {
-		Logger   flog.Options                      `mapstructure:"logger" yaml:"logger"`
-		Database DatabaseOps                       `mapstructure:"database" yaml:"database"`
-		Server   ServerOps                         `mapstructure:"server" yaml:"server"`
-		Auth     middlewares.AuthenticationOptions `mapstructure:"auth" yaml:"auth"`
+		Logger flog.Options                      `mapstructure:"logger" yaml:"logger"`
+		Server ServerOps                         `mapstructure:"server" yaml:"server"`
+		Auth   middlewares.AuthenticationOptions `mapstructure:"auth" yaml:"auth"`
+		Oss    fstorage.OssOptions               `mapstructure:"oss" yaml:"oss"`
 	}
 )
 

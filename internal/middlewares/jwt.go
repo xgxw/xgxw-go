@@ -12,6 +12,7 @@ import (
 )
 
 const (
+	// DefaultExpires 默认存活时间
 	DefaultExpires = time.Hour * 2
 )
 
@@ -30,7 +31,7 @@ type (
 		logger        *flog.Logger
 	}
 	payloadClaims struct {
-		UserID uint `json:"user_id",mapstructure:"user_id"`
+		UserID uint `json:"user_id" mapstructure:"user_id"`
 		*jwt.StandardClaims
 	}
 )
@@ -54,32 +55,26 @@ func NewJWTMiddlewares(logger *flog.Logger, opts AuthenticationOptions) echo.Mid
 		expires:       expires,
 		logger:        logger,
 	}
-	return jwt.MiddlewareFunc
+	return jwt.middlewareFunc
 }
 
-func (a *JWTMiddleware) MiddlewareFunc(next echo.HandlerFunc) echo.HandlerFunc {
+func (a *JWTMiddleware) middlewareFunc(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) (err error) {
-		return a.Handle(c, next)
+		return a.handle(c, next)
 	}
 }
 
-func (a *JWTMiddleware) Handle(c echo.Context, next echo.HandlerFunc) error {
-	payload := new(payloadClaims)
+func (a *JWTMiddleware) handle(c echo.Context, next echo.HandlerFunc) error {
+	var payload *payloadClaims
 	cookie, err := c.Cookie(constants.Token)
 	if err != nil || cookie.Value == "" {
-		// 判断是否是OA授权调回
-		if true {
-			expires := time.Now().Add(a.expires)
-			standClaims.ExpiresAt = expires.Unix()
-			// 假设成功, 且payload为获取的信息
-			payload = &payloadClaims{
-				UserID:         1,
-				StandardClaims: standClaims,
-			}
+		var isVerifyOA bool
+		if payload, isVerifyOA = a.verifyOARedirect(c); isVerifyOA {
 			tokenStr, err := a.signToken(payload)
 			if err != nil {
 				return err
 			}
+			expires := time.Now().Add(a.expires)
 			cookie := &http.Cookie{
 				Name:     constants.Token,
 				Value:    tokenStr,
@@ -98,8 +93,20 @@ func (a *JWTMiddleware) Handle(c echo.Context, next echo.HandlerFunc) error {
 			return a.redirectAuth(c)
 		}
 	}
+
 	payload.setContext(c)
 	return next(c)
+}
+
+func (a *JWTMiddleware) verifyOARedirect(c echo.Context) (payload *payloadClaims, ok bool) {
+	expires := time.Now().Add(a.expires)
+	standClaims.ExpiresAt = expires.Unix()
+	// 假设从OA拿到的用户标识为"wzs"
+	payload = &payloadClaims{
+		UserID:         1,
+		StandardClaims: standClaims,
+	}
+	return payload, true
 }
 
 func (a *JWTMiddleware) redirectAuth(c echo.Context) error {
@@ -127,6 +134,7 @@ func (a *JWTMiddleware) verifyToken(tokenStr string) (payload *payloadClaims, er
 	return nil, errors.Wrap(err, "parse jwt token error")
 }
 
+// 用于将 OA/JWT 中获取的信息写入 echo.Context 中去
 func (p *payloadClaims) setContext(c echo.Context) {
 	if p.UserID != 0 {
 		c.Set(constants.UserID, p.UserID)

@@ -24,7 +24,8 @@ var serverCmd = &cobra.Command{
 
 		boot, err := newBootstrap(opts)
 		handleInitError("bootstarp", err)
-		todoController := controllers.NewTodoController(boot.FileSvc, boot.TodoSvc)
+		todoCtrl := controllers.NewTodoController(boot.Logger, boot.TodoSvc)
+		resumeCtrl := controllers.NewResumeController(boot.Logger, boot.ResumeSvc)
 
 		e := echo.New()
 		jwtMiddleware := middlewares.NewJWTMiddlewares(boot.Logger, boot.Options.Auth)
@@ -38,17 +39,27 @@ var serverCmd = &cobra.Command{
 
 		{
 			todo := v1.Group("/todo", jwtMiddleware)
-			todo.GET("/:id", todoController.Get)
-			todo.GET("/s", todoController.GetTodos)
+			todo.GET("", todoCtrl.Get)
+			todo.PUT("", todoCtrl.Put)
 		}
 
+		{
+			resume := v1.Group("/resume", jwtMiddleware)
+			resume.GET("", resumeCtrl.Get)
+			resume.PUT("", resumeCtrl.Put)
+		}
+
+		quit := make(chan os.Signal, 1)
 		go func() {
 			// 当程序较多/HTTP设置较多时, 可以单独封装Server组件, 在组件内计算这些值
 			address := fmt.Sprintf("%s:%d", opts.Server.HTTP.Host, opts.Server.HTTP.Port)
-			e.Start(address)
+			err = e.Start(address)
+			if err != nil {
+				boot.Logger.Fatal("start echo error, error is ", err)
+				quit <- os.Interrupt
+			}
 		}()
-		quit := make(chan os.Signal, 1)
-		signal.Notify(quit, os.Interrupt, os.Kill)
+		signal.Notify(quit, os.Interrupt)
 		<-quit
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

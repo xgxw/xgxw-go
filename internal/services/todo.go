@@ -1,46 +1,43 @@
 package services
 
 import (
-	"github.com/everywan/foundation-go/database"
-	flog "github.com/everywan/foundation-go/log"
+	"context"
+
+	fstorage "github.com/everywan/foundation-go/storage"
 	"github.com/everywan/xgxw"
-	"github.com/everywan/xgxw/internal/codes"
+)
+
+const (
+	todoFileID = "todo.md"
 )
 
 // TodoService is ...
 type TodoService struct {
-	db      *database.MysqlDB
-	logger  *flog.Logger
-	fileSvc xgxw.FileService
-	userSvc xgxw.UserService
+	storage fstorage.StorageClientInterface
 }
 
 // NewTodoService create TodoService
-func NewTodoService(db *database.MysqlDB, logger *flog.Logger, fileSvc xgxw.FileService, userSvc xgxw.UserService) *TodoService {
+func NewTodoService(storage fstorage.StorageClientInterface) *TodoService {
 	return &TodoService{
-		db:      db,
-		logger:  logger,
-		fileSvc: fileSvc,
-		userSvc: userSvc,
+		storage: storage,
 	}
 }
 
 // 判断 UserService 是否实现了外层定义的所有接口
 var _ xgxw.TodoService = &TodoService{}
 
-// GetTodo is ...
-func (t *TodoService) Get(id, userID uint) (todo *xgxw.Todo, err error) {
-	todo = &xgxw.Todo{}
-	err = t.db.Where("id=? and user_id=?", id, userID).First(todo).Error
-	if err == database.ErrDBRecordNotFound {
-		return todo, codes.RecordNotFoundErr
+// Get is ...
+func (t *TodoService) Get(ctx context.Context) (todo *xgxw.Todo, err error) {
+	todo = new(xgxw.Todo)
+	buf, err := t.storage.GetObject(ctx, todoFileID)
+	if err != nil {
+		return todo, err
 	}
-	return todo, err
+	todo.Content = string(buf)
+	return todo, nil
 }
 
-// GetTodos is ...
-func (t *TodoService) GetTodos(userID uint) (todos []*xgxw.Todo, err error) {
-	todos = make([]*xgxw.Todo, 1)
-	err = t.db.Where("user_id=?", userID).Find(todos).Error
-	return todos, err
+// Put is ...
+func (t *TodoService) Put(ctx context.Context, content string) (err error) {
+	return t.storage.PutObject(ctx, todoFileID, []byte(content))
 }

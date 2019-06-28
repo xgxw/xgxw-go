@@ -1,19 +1,16 @@
 package xgxw
 
-import (
-	"github.com/jinzhu/gorm"
-)
+import "context"
 
 // Resume is ...
 type Resume struct {
-	gorm.Model
-	UserID uint   `json:"user_id" gorm:"column:user_id"`
-	Name   string `json:"name" gorm:"column:name"`
-	FileID uint   `json:"file_id" gorm:"column:file_id"`
-
-	User User `json:"user" gorm:"foreignkey:UserID;association_foreignkey:ID"`
-	File File `json:"file" gorm:"foreignkey:FileID;association_foreignkey:ID"`
+	Content  string `json:"content" gorm:"column:content"`
+	UpdateAt string `json:"update_at" gorm:"column:update_at"`
 }
 
 // ResumeService is ...
-type ResumeService interface{}
+type ResumeService interface {
+	Get(ctx context.Context) (resume *Resume, err error)
+	// 先作成常量的, 后续改为可以diff的.
+	Put(ctx context.Context, content string) (err error)
+}

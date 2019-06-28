@@ -7,38 +7,33 @@ import (
 	"github.com/everywan/xgxw"
 	"github.com/everywan/xgxw/internal/services"
 
-	"github.com/everywan/foundation-go/database"
 	flog "github.com/everywan/foundation-go/log"
+	fstorage "github.com/everywan/foundation-go/storage"
 )
 
 // Bootstrap 公用实例初始化
 type bootstrap struct {
 	Logger    *flog.Logger
-	Database  *database.MysqlDB
-	FileSvc   xgxw.FileService
-	UserSvc   xgxw.UserService
 	TodoSvc   xgxw.TodoService
 	ResumeSvc xgxw.ResumeService
 	Options   *ApplicationOps
 }
 
-func newBootstrap(opts *ApplicationOps) (*bootstrap, error) {
-	// Register
-	db, err := database.NewMysqlDatabase(opts.Database.Mysql)
-	handleInitError("database", err)
+func newBootstrap(opts *ApplicationOps) (boot *bootstrap, err error) {
 	logger := flog.NewLogger(opts.Logger, os.Stdout)
-	fileSvc := services.NewFileService(db, logger)
-	userSvc := services.NewFileService(db, logger)
-	todoSvc := services.NewTodoService(db, logger, fileSvc, userSvc)
-	resumeSvc := services.NewResumeService(db, logger, fileSvc, userSvc)
-	return &bootstrap{
+	storage, err := fstorage.NewOssClient(&opts.Oss)
+	if err != nil {
+		return boot, err
+	}
+	todoSvc := services.NewTodoService(storage)
+	resumeSvc := services.NewResumeService(storage)
+	boot = &bootstrap{
 		Logger:    logger,
-		Database:  db,
-		FileSvc:   fileSvc,
 		TodoSvc:   todoSvc,
 		ResumeSvc: resumeSvc,
 		Options:   opts,
-	}, nil
+	}
+	return boot, nil
 }
 
 func handleInitError(module string, err error) {

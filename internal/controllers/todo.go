@@ -1,51 +1,54 @@
 package controllers
 
 import (
+	"context"
 	"net/http"
-	"strconv"
 
+	flog "github.com/everywan/foundation-go/log"
 	"github.com/everywan/xgxw"
-	"github.com/everywan/xgxw/internal/constants"
 	"github.com/labstack/echo"
 )
 
 type (
 	// TodoController is ...
 	TodoController struct {
-		fileSvc xgxw.FileService
+		logger  *flog.Logger
 		todoSvc xgxw.TodoService
 	}
 )
 
 // NewTodoController is ...
-func NewTodoController(fileSvc xgxw.FileService, todoSvc xgxw.TodoService) *TodoController {
+func NewTodoController(logger *flog.Logger, todoSvc xgxw.TodoService) *TodoController {
 	return &TodoController{
-		fileSvc: fileSvc,
+		logger:  logger,
 		todoSvc: todoSvc,
 	}
 }
 
-// GetTodo is 获取Todo.md
+// Get is 获取Todo.md
 func (e *TodoController) Get(ctx echo.Context) error {
-	id := ctx.Param("id")
-	if id == "" {
-		return ctx.NoContent(http.StatusNotFound)
-	}
-	_id, _ := strconv.ParseUint(id, 10, 32)
-	userID := ctx.Get(constants.UserID).(uint)
-	todo, err := e.todoSvc.Get(uint(_id), userID)
+	todo, err := e.todoSvc.Get(context.Background())
 	if err != nil {
+		e.logger.Error(err)
 		return ctx.NoContent(http.StatusNotFound)
 	}
 	return ctx.JSON(http.StatusOK, todo)
 }
 
-// GetTodos is ..
-func (e *TodoController) GetTodos(ctx echo.Context) error {
-	userID := ctx.Get(constants.UserID).(uint)
-	todos, err := e.todoSvc.GetTodos(userID)
+// Put is ...
+func (e *TodoController) Put(ctx echo.Context) error {
+	type requestCarrier struct {
+		Content string `json:"content" form:"content" query:"content"`
+	}
+	r := new(requestCarrier)
+	if err := ctx.Bind(r); err != nil {
+		e.logger.Error(err)
+		return ctx.String(http.StatusBadRequest, "please input content")
+	}
+	err := e.todoSvc.Put(context.Background(), r.Content)
 	if err != nil {
+		e.logger.Error(err)
 		return ctx.NoContent(http.StatusNotFound)
 	}
-	return ctx.JSON(http.StatusOK, todos)
+	return ctx.NoContent(http.StatusOK)
 }

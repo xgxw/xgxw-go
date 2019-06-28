@@ -10,10 +10,16 @@ server:
 database:
   mysql:
     driver: mysql
-    dsn: "wzs:test@tcp(localhost:3306)/xgxw?timeout=3s&charset=utf8&parseTime=True&loc=Local"
+    dsn: "wzs:test@tcp(localhost:3306)/test?timeout=3s&charset=utf8&parseTime=True&loc=Local"
     keep_alive: 300
     max_opens: 20
     max_idles: 3
 
 auth:
-  key: "brysjhhrsl"
+  key: ""
+
+oss:
+  endpoint: ""
+  access_key_id: ""
+  access_key_secret: ""
+  bucket: ""
