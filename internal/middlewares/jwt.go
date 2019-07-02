@@ -68,8 +68,9 @@ func (a *JWTMiddleware) handle(c echo.Context, next echo.HandlerFunc) error {
 	var payload *payloadClaims
 	cookie, err := c.Cookie(constants.Token)
 	if err != nil || cookie.Value == "" {
-		var isVerifyOA bool
-		if payload, isVerifyOA = a.verifyOARedirect(c); isVerifyOA {
+		var isAuthorize bool
+		// 判断是否是从授权跳转回的
+		if payload, isAuthorize = a.verifyAuthRedirect(c); isAuthorize {
 			tokenStr, err := a.signToken(payload)
 			if err != nil {
 				return err
@@ -98,7 +99,7 @@ func (a *JWTMiddleware) handle(c echo.Context, next echo.HandlerFunc) error {
 	return next(c)
 }
 
-func (a *JWTMiddleware) verifyOARedirect(c echo.Context) (payload *payloadClaims, ok bool) {
+func (a *JWTMiddleware) verifyAuthRedirect(c echo.Context) (payload *payloadClaims, ok bool) {
 	expires := time.Now().Add(a.expires)
 	standClaims.ExpiresAt = expires.Unix()
 	// 假设从OA拿到的用户标识为"wzs"
