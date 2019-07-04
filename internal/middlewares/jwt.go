@@ -4,12 +4,43 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	jwt "github.com/dgrijalva/jwt-go"
 	flog "github.com/everywan/foundation-go/log"
 	"github.com/everywan/xgxw/internal/constants"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 )
+
+/*
+	是否有必要将 jwt 封装到基础组建中: 否
+
+	考虑下那些模块/代码应该复用, 那些不应该. jwt变化较多, 不属于项目间复用的模块.
+	jwt组件主要分为三部分:
+	1. jwt数据结构与构造函数
+	2. jwt处理函数(handle)
+	3. jwt数据载体(payload)
+
+	显然 2/3 是不同的. 但其实, 1也是隐藏的不同的. 如某些项目认证需要数据库链接, 有些从缓存取, 有些通过网址认证, 这显然造成1也是不同的. 所以 jwt 不应被封装到基础组件中.
+	其次, 为了内聚度更高, 函数应有 HandleFunc, 以便有认证路由时, 直接提供认证函数(因为加密解密需要用一套信息.)
+*/
+
+/*
+	是否将认证逻辑放入 jwt 中, 还是单独路由
+
+	后端是否有login路由有两种处理逻辑
+	当使用cookie存储token时, 可以不需要login路由, 因为认证中间件中可以直接设置cookie.
+	当使用localstorage/queryParam时, 需要login路由, 因为需要写入到response.data中.
+
+	当前端有登录页时, 需要login路由, 否则登录页没有合适的请求地址. 并且前端可以不判断 未认证 错误, 因为后端可以直接重定向到登录页. 但是不建议这么做, 因为跳转前最好通知用户确认.
+	当不使用登录页时, 可以在页面弹窗提示输入认证信息, 且必须验证后端返回值有无 未认证 错误.
+	当 没有login路由&&没有登录页 时, 前端必须在每个请求判断有无认证信息, 有则写入cookie中, 或者将认证信息写入cookie, 但这样不安全.
+
+	目前采用的方案:
+	1. 前端添加登录页, for 某些进入页面就需要权限的网页. 所以, 对应的, 后端也需要 auth 路由
+	2. 对于前端某些提交时才需要权限的网页, 添加密钥输入提示浮层.
+
+	对于后端, 显然 jwt 组件是该项目的一部分而不是共用的一部分. 业务处理逻辑与数据载体都是耦合与项目的
+*/
 
 const (
 	// DefaultExpires 默认存活时间
@@ -19,104 +50,85 @@ const (
 type (
 	// AuthenticationOptions 认证中间件配置项
 	AuthenticationOptions struct {
-		Key     string `json:"-" yaml:"key" mapstructure:"-"`
-		Expires int64  `json:"-" yaml:"expires" mapstructure:"-"`
+		Key     string `json:"-" yaml:"key" mapstructure:"key"`
+		Expires int64  `json:"-" yaml:"expires" mapstructure:"expires"`
+		Cipher  string `json:"-" yaml:"cipher" mapstructure:"cipher"`
 	}
 	// JWTMiddleware : only use HMAC
 	JWTMiddleware struct {
 		key           []byte
 		signingMethod jwt.SigningMethod
 		parse         *jwt.Parser
-		expires       time.Duration
 		logger        *flog.Logger
+		// 用于claims
+		expires time.Duration
+		// 用于认证, 后续可根据需要改为db密码
+		cipher string
 	}
-	payloadClaims struct {
-		UserID uint `json:"user_id" mapstructure:"user_id"`
-		*jwt.StandardClaims
-	}
-)
 
-var (
-	standClaims = new(jwt.StandardClaims)
+	payloadClaims struct {
+		*jwt.StandardClaims
+		UserID uint `json:"user_id" mapstructure:"user_id"`
+	}
 )
 
 // NewJWTMiddlewares 生成JWT中间件
-func NewJWTMiddlewares(logger *flog.Logger, opts AuthenticationOptions) echo.MiddlewareFunc {
-	jwtPrase := new(jwt.Parser)
-	key := []byte(opts.Key)
+func NewJWTMiddlewares(logger *flog.Logger, opts AuthenticationOptions) *JWTMiddleware {
 	expires := DefaultExpires
 	if opts.Expires != 0 {
 		expires = time.Duration(opts.Expires)
 	}
 	jwt := &JWTMiddleware{
-		key:           key,
+		key:           []byte(opts.Key),
 		signingMethod: jwt.GetSigningMethod("HS256"),
-		parse:         jwtPrase,
-		expires:       expires,
+		parse:         new(jwt.Parser),
 		logger:        logger,
+		expires:       expires,
+		cipher:        opts.Cipher,
 	}
-	return jwt.middlewareFunc
+	return jwt
 }
 
-func (a *JWTMiddleware) middlewareFunc(next echo.HandlerFunc) echo.HandlerFunc {
+// MiddlewareFunc 生成中间件函数
+func (a *JWTMiddleware) MiddlewareFunc(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) (err error) {
-		return a.handle(c, next)
-	}
-}
-
-func (a *JWTMiddleware) handle(c echo.Context, next echo.HandlerFunc) error {
-	var payload *payloadClaims
-	cookie, err := c.Cookie(constants.Token)
-	if err != nil || cookie.Value == "" {
-		var isAuthorize bool
-		// 判断是否是从授权跳转回的
-		if payload, isAuthorize = a.verifyAuthRedirect(c); isAuthorize {
-			tokenStr, err := a.signToken(payload)
-			if err != nil {
-				return err
-			}
-			expires := time.Now().Add(a.expires)
-			cookie := &http.Cookie{
-				Name:     constants.Token,
-				Value:    tokenStr,
-				Expires:  expires,
-				HttpOnly: true,
-			}
-			c.SetCookie(cookie)
-		} else {
-			return a.redirectAuth(c)
+		tokenStr := c.Request().Header.Get("Authorization")
+		if tokenStr == "" {
+			return c.NoContent(http.StatusForbidden)
 		}
-	} else {
-		tokenStr := cookie.Value
-		payload, err = a.verifyToken(tokenStr)
+		payload, err := a.verifyToken(tokenStr)
 		if err != nil {
 			a.logger.Fatalf("verifyToken error: %v", err)
 			return a.redirectAuth(c)
 		}
-	}
 
-	payload.setContext(c)
-	return next(c)
-}
-
-func (a *JWTMiddleware) verifyAuthRedirect(c echo.Context) (payload *payloadClaims, ok bool) {
-	expires := time.Now().Add(a.expires)
-	standClaims.ExpiresAt = expires.Unix()
-	// 假设从OA拿到的用户标识为"wzs"
-	payload = &payloadClaims{
-		UserID:         1,
-		StandardClaims: standClaims,
+		c.Set(constants.UserID, payload.UserID)
+		return next(c)
 	}
-	return payload, true
 }
 
 func (a *JWTMiddleware) redirectAuth(c echo.Context) error {
-	// 跳转到OA认证
-	url := ""
-	return c.Redirect(http.StatusTemporaryRedirect, url)
+	return c.NoContent(http.StatusForbidden)
 }
 
-func (a *JWTMiddleware) signToken(claims *payloadClaims) (tokenStr string, err error) {
+// HandlerFunc 生成路由处理函数
+func (a *JWTMiddleware) HandlerFunc(c echo.Context) (err error) {
+	cipher := c.QueryParam(constants.Cipher)
+	if cipher != a.cipher {
+		return c.NoContent(http.StatusForbidden)
+	}
+	standClaims := &jwt.StandardClaims{
+		ExpiresAt: time.Now().Add(a.expires).Unix(),
+	}
+	payload := &payloadClaims{
+		UserID:         1,
+		StandardClaims: standClaims,
+	}
+	token, _ := a.signToken(payload)
+	return c.String(http.StatusOK, token)
+}
+
+func (a *JWTMiddleware) signToken(claims jwt.Claims) (tokenStr string, err error) {
 	token := jwt.NewWithClaims(a.signingMethod, claims)
 	out, err := token.SignedString(a.key)
 	return out, err
@@ -133,11 +145,4 @@ func (a *JWTMiddleware) verifyToken(tokenStr string) (payload *payloadClaims, er
 		return payload, nil
 	}
 	return nil, errors.Wrap(err, "parse jwt token error")
-}
-
-// 用于将 OA/JWT 中获取的信息写入 echo.Context 中去
-func (p *payloadClaims) setContext(c echo.Context) {
-	if p.UserID != 0 {
-		c.Set(constants.UserID, p.UserID)
-	}
 }
