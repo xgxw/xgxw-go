@@ -29,6 +29,7 @@ var serverCmd = &cobra.Command{
 
 		e := echo.New()
 		jwtMiddleware := middlewares.NewJWTMiddlewares(boot.Logger, boot.Options.Auth)
+		jwtMiddlewareFunc := jwtMiddleware.MiddlewareFunc
 		e.Use(middleware.Logger())
 		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 			AllowOrigins:     []string{boot.Options.Server.CorsAllowOrigin},
@@ -42,6 +43,10 @@ var serverCmd = &cobra.Command{
 		v1 := e.Group("/v1")
 
 		{
+			v1.POST("/auth/token", jwtMiddleware.HandlerFunc)
+		}
+
+		{
 			file := v1.Group("/file")
 			file.GET("/:fid", func(c echo.Context) error {
 				r := make(map[string]string, 3)
@@ -50,17 +55,17 @@ var serverCmd = &cobra.Command{
 				r["content"] = "_test_"
 				return c.JSON(http.StatusOK, r)
 			})
-			file.PUT("", todoCtrl.Put, jwtMiddleware)
+			file.PUT("", todoCtrl.Put, jwtMiddlewareFunc)
 		}
 
 		{
-			todo := v1.Group("/todo", jwtMiddleware)
+			todo := v1.Group("/todo", jwtMiddlewareFunc)
 			todo.GET("", todoCtrl.Get)
 			todo.PUT("", todoCtrl.Put)
 		}
 
 		{
-			resume := v1.Group("/resume", jwtMiddleware)
+			resume := v1.Group("/resume", jwtMiddlewareFunc)
 			resume.GET("", resumeCtrl.Get)
 			resume.PUT("", resumeCtrl.Put)
 		}
