@@ -24,8 +24,7 @@ var serverCmd = &cobra.Command{
 
 		boot, err := newBootstrap(opts)
 		handleInitError("bootstarp", err)
-		todoCtrl := controllers.NewTodoController(boot.Logger, boot.TodoSvc)
-		resumeCtrl := controllers.NewResumeController(boot.Logger, boot.ResumeSvc)
+		articleCtrl := controllers.NewArticleController(boot.Logger, boot.FileSvc)
 
 		e := echo.New()
 		jwtMiddleware := middlewares.NewJWTMiddlewares(boot.Logger, boot.Options.Auth)
@@ -48,26 +47,8 @@ var serverCmd = &cobra.Command{
 
 		{
 			file := v1.Group("/file")
-			file.GET("/:fid", func(c echo.Context) error {
-				r := make(map[string]string, 3)
-				r["fid"] = c.Param("fid")
-				r["name"] = r["fid"]
-				r["content"] = "_test_"
-				return c.JSON(http.StatusOK, r)
-			})
-			file.PUT("", todoCtrl.Put, jwtMiddlewareFunc)
-		}
-
-		{
-			todo := v1.Group("/todo", jwtMiddlewareFunc)
-			todo.GET("", todoCtrl.Get)
-			todo.PUT("", todoCtrl.Put)
-		}
-
-		{
-			resume := v1.Group("/resume", jwtMiddlewareFunc)
-			resume.GET("", resumeCtrl.Get)
-			resume.PUT("", resumeCtrl.Put)
+			file.GET("/:fid", articleCtrl.Get, jwtMiddlewareFunc)
+			file.PUT("/:fid", articleCtrl.Put, jwtMiddlewareFunc)
 		}
 
 		quit := make(chan os.Signal, 1)

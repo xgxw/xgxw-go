@@ -13,10 +13,9 @@ import (
 
 // Bootstrap 公用实例初始化
 type bootstrap struct {
-	Logger    *flog.Logger
-	TodoSvc   xgxw.TodoService
-	ResumeSvc xgxw.ResumeService
-	Options   *ApplicationOps
+	Logger  *flog.Logger
+	FileSvc xgxw.FileService
+	Options *ApplicationOps
 }
 
 func newBootstrap(opts *ApplicationOps) (boot *bootstrap, err error) {
@@ -25,13 +24,11 @@ func newBootstrap(opts *ApplicationOps) (boot *bootstrap, err error) {
 	if err != nil {
 		return boot, err
 	}
-	todoSvc := services.NewTodoService(storage)
-	resumeSvc := services.NewResumeService(storage)
+	fileSvc := services.NewFileService(storage)
 	boot = &bootstrap{
-		Logger:    logger,
-		TodoSvc:   todoSvc,
-		ResumeSvc: resumeSvc,
-		Options:   opts,
+		Logger:  logger,
+		FileSvc: fileSvc,
+		Options: opts,
 	}
 	return boot, nil
 }

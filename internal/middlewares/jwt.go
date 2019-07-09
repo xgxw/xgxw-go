@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -94,6 +95,13 @@ func (a *JWTMiddleware) MiddlewareFunc(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) (err error) {
 		tokenStr := c.Request().Header.Get("Authorization")
 		if tokenStr == "" {
+			path := c.Request().URL.Path
+			method := c.Request().Method
+			if (method == "" || method == "GET") && strings.HasPrefix(path, "/v1/file") {
+				c.Set(constants.IsGuest, true)
+				return next(c)
+			}
+			// c.Request().URL.Path
 			return c.NoContent(http.StatusForbidden)
 		}
 		payload, err := a.verifyToken(tokenStr)
@@ -111,10 +119,16 @@ func (a *JWTMiddleware) redirectAuth(c echo.Context) error {
 	return c.NoContent(http.StatusForbidden)
 }
 
-// HandlerFunc 生成路由处理函数
+// HandlerFunc 生成路由处理函数, 主要用于请求路由生成token.
 func (a *JWTMiddleware) HandlerFunc(c echo.Context) (err error) {
-	cipher := c.QueryParam(constants.Cipher)
-	if cipher != a.cipher {
+	type requestCarrier struct {
+		Cipher string `json:"cipher" form:"cipher" query:"cipher"`
+	}
+	r := new(requestCarrier)
+	if err := c.Bind(r); err != nil {
+		return c.NoContent(http.StatusForbidden)
+	}
+	if r.Cipher != a.cipher {
 		return c.NoContent(http.StatusForbidden)
 	}
 	standClaims := &jwt.StandardClaims{
@@ -125,7 +139,15 @@ func (a *JWTMiddleware) HandlerFunc(c echo.Context) (err error) {
 		StandardClaims: standClaims,
 	}
 	token, _ := a.signToken(payload)
-	return c.String(http.StatusOK, token)
+	type responseCarrier struct {
+		Token     string `json:"token"`
+		ExpiresAt int64  `json:"expires_at"`
+	}
+	resp := responseCarrier{
+		Token:     token,
+		ExpiresAt: standClaims.ExpiresAt,
+	}
+	return c.JSON(http.StatusOK, resp)
 }
 
 func (a *JWTMiddleware) signToken(claims jwt.Claims) (tokenStr string, err error) {
