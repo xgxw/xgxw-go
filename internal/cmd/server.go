@@ -47,8 +47,8 @@ var serverCmd = &cobra.Command{
 
 		{
 			file := v1.Group("/file")
-			file.GET("/:fid", articleCtrl.Get, jwtMiddlewareFunc)
-			file.PUT("/:fid", articleCtrl.Put, jwtMiddlewareFunc)
+			file.GET("/*", articleCtrl.Get, jwtMiddlewareFunc)
+			file.PUT("/*", articleCtrl.Put, jwtMiddlewareFunc)
 		}
 
 		quit := make(chan os.Signal, 1)

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	flog "github.com/everywan/foundation-go/log"
@@ -26,15 +27,24 @@ func NewArticleController(logger *flog.Logger, fileSvc xgxw.FileService) *Articl
 	}
 }
 
+func (e *ArticleController) getFidFromPath(ctx echo.Context) string {
+	path := ctx.Request().URL.Path
+	if len(path) < 9 {
+		return ""
+	}
+	return path[9:]
+}
+
 // Get is 获取Article.md
 func (e *ArticleController) Get(ctx echo.Context) error {
-	fid := ctx.Param("fid")
+	fid := e.getFidFromPath(ctx)
+	fmt.Println(11111111, fid)
 	if fid == "" {
 		return ctx.NoContent(http.StatusNotFound)
 	}
 	// Guest 用户只能访问 public 文件夹
 	if ctx.Get(constants.IsGuest).(bool) {
-		fid = "/public/" + fid
+		fid = "public/" + fid
 	}
 	article, err := e.fileSvc.Get(context.Background(), fid)
 	if err != nil {
@@ -50,7 +60,7 @@ type putRequestCarrier struct {
 
 // Put is ...
 func (e *ArticleController) Put(ctx echo.Context) error {
-	fid := ctx.QueryParam("fid")
+	fid := e.getFidFromPath(ctx)
 	if fid == "" {
 		return ctx.NoContent(http.StatusNotFound)
 	}
