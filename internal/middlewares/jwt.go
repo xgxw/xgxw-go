@@ -98,6 +98,7 @@ func (a *JWTMiddleware) MiddlewareFunc(next echo.HandlerFunc) echo.HandlerFunc {
 			path := c.Request().URL.Path
 			method := c.Request().Method
 			if (method == "" || method == "GET") && strings.HasPrefix(path, "/v1/file") {
+				// Guest 用户只能访问 public 文件夹, 当 isGuest 显式为true是才表明是Guest用户
 				c.Set(constants.IsGuest, true)
 				return next(c)
 			}

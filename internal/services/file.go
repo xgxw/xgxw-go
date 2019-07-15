@@ -30,6 +30,8 @@ func (t *FileService) Get(ctx context.Context, fid string) (file *xgxw.File, err
 	if err != nil {
 		return file, err
 	}
+	file.FileID = fid
+	file.Name = fid
 	file.Content = string(buf)
 	return file, nil
 }

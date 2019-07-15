@@ -31,7 +31,7 @@ var serverCmd = &cobra.Command{
 		jwtMiddlewareFunc := jwtMiddleware.MiddlewareFunc
 		e.Use(middleware.Logger())
 		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-			AllowOrigins:     []string{boot.Options.Server.CorsAllowOrigin},
+			AllowOrigins:     boot.Options.Server.CorsAllowOrigin,
 			AllowCredentials: true,
 		}))
 
@@ -84,7 +84,7 @@ type (
 	}
 	// ServerOps is ...
 	ServerOps struct {
-		HTTP            HTTPOps `mapstructure:"http" yaml:"http"`
-		CorsAllowOrigin string  `mapstructure:"cors_allow_origin"`
+		HTTP            HTTPOps  `mapstructure:"http" yaml:"http"`
+		CorsAllowOrigin []string `mapstructure:"cors_allow_origin"`
 	}
 )

@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	flog "github.com/everywan/foundation-go/log"
@@ -38,13 +37,15 @@ func (e *ArticleController) getFidFromPath(ctx echo.Context) string {
 // Get is 获取Article.md
 func (e *ArticleController) Get(ctx echo.Context) error {
 	fid := e.getFidFromPath(ctx)
-	fmt.Println(11111111, fid)
 	if fid == "" {
 		return ctx.NoContent(http.StatusNotFound)
 	}
-	// Guest 用户只能访问 public 文件夹
-	if ctx.Get(constants.IsGuest).(bool) {
-		fid = "public/" + fid
+	// Guest 用户只能访问 public 文件夹, 当 isGuest 显式为true是才表明是Guest用户
+	isGuest := ctx.Get(constants.IsGuest)
+	if isGuest != nil {
+		if is, ok := isGuest.(bool); ok && is {
+			fid = "public/" + fid
+		}
 	}
 	article, err := e.fileSvc.Get(context.Background(), fid)
 	if err != nil {
