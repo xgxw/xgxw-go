@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	flog "github.com/everywan/foundation-go/log"
 	"github.com/everywan/xgxw"
@@ -43,8 +44,8 @@ func (e *ArticleController) Get(ctx echo.Context) error {
 	// Guest 用户只能访问 public 文件夹, 当 isGuest 显式为true是才表明是Guest用户
 	isGuest := ctx.Get(constants.IsGuest)
 	if isGuest != nil {
-		if is, ok := isGuest.(bool); ok && is {
-			fid = "public/" + fid
+		if is, ok := isGuest.(bool); ok && is && !strings.HasPrefix(fid, "public/") {
+			return ctx.NoContent(http.StatusForbidden)
 		}
 	}
 	article, err := e.fileSvc.Get(context.Background(), fid)
