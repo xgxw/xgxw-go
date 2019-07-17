@@ -107,7 +107,7 @@ func (a *JWTMiddleware) MiddlewareFunc(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		payload, err := a.verifyToken(tokenStr)
 		if err != nil {
-			a.logger.Fatalf("verifyToken error: %v", err)
+			a.logger.Errorf("verifyToken error: %v", err)
 			return a.redirectAuth(c)
 		}
 
