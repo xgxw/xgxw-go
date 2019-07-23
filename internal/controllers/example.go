@@ -18,6 +18,6 @@ func NewExampleController() *ExampleController {
 }
 
 // SayHello is ...
-func (e *ExampleController) SayHello(ctx echo.Context) error {
+func (this *ExampleController) SayHello(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, "Hello")
 }

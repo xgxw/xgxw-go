@@ -55,8 +55,8 @@ type (
 )
 
 // Load 使用viper加载配置文件
-func (opts *ApplicationOps) Load() {
-	err := viper.Unmarshal(opts)
+func (this *ApplicationOps) Load() {
+	err := viper.Unmarshal(this)
 	if err != nil {
 		// 加入log组件, 改用log记录
 		fmt.Printf("failed to parse config file: %s", err)

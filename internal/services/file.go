@@ -23,10 +23,10 @@ func NewFileService(storage fstorage.StorageClientInterface) *FileService {
 var _ xgxw.FileService = &FileService{}
 
 // Get is ...
-func (t *FileService) Get(ctx context.Context, fid string) (file *xgxw.File, err error) {
+func (this *FileService) Get(ctx context.Context, fid string) (file *xgxw.File, err error) {
 	// 判断 fid 格式, .. 等可能影响权限?
 	file = new(xgxw.File)
-	buf, err := t.storage.GetObject(ctx, fid)
+	buf, err := this.storage.GetObject(ctx, fid)
 	if err != nil {
 		return file, err
 	}
@@ -37,7 +37,7 @@ func (t *FileService) Get(ctx context.Context, fid string) (file *xgxw.File, err
 }
 
 // Put is ...
-func (t *FileService) Put(ctx context.Context, fid, content string) (err error) {
+func (this *FileService) Put(ctx context.Context, fid, content string) (err error) {
 	// 判断 fid 格式, .. 等可能影响权限?
-	return t.storage.PutObject(ctx, fid, []byte(content))
+	return this.storage.PutObject(ctx, fid, []byte(content))
 }

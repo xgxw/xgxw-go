@@ -90,16 +90,16 @@ func NewJWTMiddlewares(logger *flog.Logger, opts AuthenticationOptions) *JWTMidd
 }
 
 // MiddlewareFunc 生成中间件函数
-func (a *JWTMiddleware) MiddlewareFunc(next echo.HandlerFunc) echo.HandlerFunc {
+func (this *JWTMiddleware) MiddlewareFunc(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) (err error) {
 		tokenStr := c.Request().Header.Get("Authorization")
 		if tokenStr == "" {
 			return c.NoContent(http.StatusForbidden)
 		}
-		payload, err := a.verifyToken(tokenStr)
+		payload, err := this.verifyToken(tokenStr)
 		if err != nil {
-			a.logger.Errorf("verifyToken error: %v", err)
-			return a.redirectAuth(c)
+			this.logger.Errorf("verifyToken error: %v", err)
+			return this.redirectAuth(c)
 		}
 
 		c.Set(constants.UserID, payload.UserID)
@@ -107,12 +107,12 @@ func (a *JWTMiddleware) MiddlewareFunc(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (a *JWTMiddleware) redirectAuth(c echo.Context) error {
+func (this *JWTMiddleware) redirectAuth(c echo.Context) error {
 	return c.NoContent(http.StatusForbidden)
 }
 
 // HandlerFunc 生成路由处理函数, 主要用于请求路由生成token.
-func (a *JWTMiddleware) HandlerFunc(c echo.Context) (err error) {
+func (this *JWTMiddleware) HandlerFunc(c echo.Context) (err error) {
 	type requestCarrier struct {
 		Cipher string `json:"cipher" form:"cipher" query:"cipher"`
 	}
@@ -120,17 +120,17 @@ func (a *JWTMiddleware) HandlerFunc(c echo.Context) (err error) {
 	if err := c.Bind(r); err != nil {
 		return c.NoContent(http.StatusForbidden)
 	}
-	if r.Cipher != a.cipher {
+	if r.Cipher != this.cipher {
 		return c.NoContent(http.StatusForbidden)
 	}
 	standClaims := &jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(a.expires).Unix(),
+		ExpiresAt: time.Now().Add(this.expires).Unix(),
 	}
 	payload := &payloadClaims{
 		UserID:         1,
 		StandardClaims: standClaims,
 	}
-	token, _ := a.signToken(payload)
+	token, _ := this.signToken(payload)
 	type responseCarrier struct {
 		Token     string `json:"token"`
 		ExpiresAt int64  `json:"expires_at"`
@@ -142,15 +142,15 @@ func (a *JWTMiddleware) HandlerFunc(c echo.Context) (err error) {
 	return c.JSON(http.StatusOK, resp)
 }
 
-func (a *JWTMiddleware) signToken(claims jwt.Claims) (tokenStr string, err error) {
-	token := jwt.NewWithClaims(a.signingMethod, claims)
-	out, err := token.SignedString(a.key)
+func (this *JWTMiddleware) signToken(claims jwt.Claims) (tokenStr string, err error) {
+	token := jwt.NewWithClaims(this.signingMethod, claims)
+	out, err := token.SignedString(this.key)
 	return out, err
 }
 
-func (a *JWTMiddleware) verifyToken(tokenStr string) (payload *payloadClaims, err error) {
-	token, err := a.parse.ParseWithClaims(tokenStr, &payloadClaims{}, func(t *jwt.Token) (interface{}, error) {
-		return a.key, nil
+func (this *JWTMiddleware) verifyToken(tokenStr string) (payload *payloadClaims, err error) {
+	token, err := this.parse.ParseWithClaims(tokenStr, &payloadClaims{}, func(t *jwt.Token) (interface{}, error) {
+		return this.key, nil
 	})
 	if err != nil {
 		return nil, err

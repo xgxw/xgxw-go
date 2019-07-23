@@ -25,7 +25,7 @@ func NewArticleController(logger *flog.Logger, fileSvc xgxw.FileService) *Articl
 	}
 }
 
-func (e *ArticleController) getFidFromPath(ctx echo.Context) string {
+func (this *ArticleController) getFidFromPath(ctx echo.Context) string {
 	path := ctx.Request().URL.Path
 	if len(path) < 9 {
 		return ""
@@ -34,14 +34,14 @@ func (e *ArticleController) getFidFromPath(ctx echo.Context) string {
 }
 
 // Get is 获取Article.md
-func (e *ArticleController) Get(ctx echo.Context) error {
-	fid := e.getFidFromPath(ctx)
+func (this *ArticleController) Get(ctx echo.Context) error {
+	fid := this.getFidFromPath(ctx)
 	if fid == "" {
 		return ctx.NoContent(http.StatusNotFound)
 	}
-	article, err := e.fileSvc.Get(context.Background(), fid)
+	article, err := this.fileSvc.Get(context.Background(), fid)
 	if err != nil {
-		e.logger.Error(err)
+		this.logger.Error(err)
 		return ctx.NoContent(http.StatusNotFound)
 	}
 	return ctx.JSON(http.StatusOK, article)
@@ -52,19 +52,19 @@ type putRequestCarrier struct {
 }
 
 // Put is ...
-func (e *ArticleController) Put(ctx echo.Context) error {
-	fid := e.getFidFromPath(ctx)
+func (this *ArticleController) Put(ctx echo.Context) error {
+	fid := this.getFidFromPath(ctx)
 	if fid == "" {
 		return ctx.NoContent(http.StatusNotFound)
 	}
 	r := new(putRequestCarrier)
 	if err := ctx.Bind(r); err != nil {
-		e.logger.Error(err)
+		this.logger.Error(err)
 		return ctx.String(http.StatusBadRequest, "please input content")
 	}
-	err := e.fileSvc.Put(context.Background(), fid, r.Content)
+	err := this.fileSvc.Put(context.Background(), fid, r.Content)
 	if err != nil {
-		e.logger.Error(err)
+		this.logger.Error(err)
 		return ctx.NoContent(http.StatusNotFound)
 	}
 	return ctx.NoContent(http.StatusOK)
