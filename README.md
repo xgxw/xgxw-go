@@ -1,6 +1,5 @@
 # 瞎搞瞎玩
 
----
 [![Go Report Card](https://github.com/everywan/xgxw)](https://goreportcard.com/report/github.com/everywan/xgxw)
 
 ## 预配置
