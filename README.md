@@ -1,7 +1,7 @@
 # 瞎搞瞎玩
 
 ---
-[![Go Report Card](https://goreportcard.com/badge/github.com/syncthing/syncthing)](https://goreportcard.com/report/github.com/syncthing/syncthing)
+[![Go Report Card](https://github.com/everywan/xgxw)](https://goreportcard.com/report/github.com/everywan/xgxw)
 
 ## 预配置
 1. 安装 && 启动mysql: 参照 [mysql](/script/mysql.sh)
