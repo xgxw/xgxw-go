@@ -121,7 +121,7 @@ func (this *ArticleController) GetPublicCatalog(ctx echo.Context) error {
 		return ctx.String(http.StatusBadRequest, "path can't contains `..`!")
 	}
 	r.Path = "public/" + r.Path
-	catalog, err := this.fileSvc.GetList(context.Background(), r.Path, r.Options)
+	catalog, err := this.fileSvc.GetCatalog(context.Background(), r.Path, r.Options)
 	if err != nil {
 		this.logger.Error(err)
 		return ctx.NoContent(http.StatusNotFound)
@@ -136,7 +136,7 @@ func (this *ArticleController) GetCatalog(ctx echo.Context) error {
 		this.logger.Error(err)
 		return ctx.String(http.StatusBadRequest, "please input fids")
 	}
-	catalog, err := this.fileSvc.GetList(context.Background(), r.Path, r.Options)
+	catalog, err := this.fileSvc.GetCatalog(context.Background(), r.Path, r.Options)
 	if err != nil {
 		this.logger.Error(err)
 		return ctx.NoContent(http.StatusNotFound)

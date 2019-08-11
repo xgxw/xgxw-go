@@ -3,7 +3,7 @@ module github.com/everywan/xgxw
 require (
 	github.com/aliyun/aliyun-oss-go-sdk v2.0.1+incompatible // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/everywan/foundation-go v0.0.0-20190811053509-01283a2a96d6
+	github.com/everywan/foundation-go v0.0.0-20190811113305-1ec5a9d87f37
 	github.com/gopherjs/gopherjs v0.0.0-20190430165422-3e4dfb77656c // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect

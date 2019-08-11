@@ -23,6 +23,6 @@ type FileService interface {
 	Del(ctx context.Context, fid string) (err error)
 	// DelFiles is 删除多个文件
 	DelFiles(ctx context.Context, fids []string) (err error)
-	// GetList is 获取文件列表, 返回目录树的json字符串
-	GetList(ctx context.Context, path string, opts storage.ListOption) (catalog string, err error)
+	// GetCatalog is 获取文件列表, 返回目录树的json字符串
+	GetCatalog(ctx context.Context, path string, opts storage.ListOption) (catalog string, err error)
 }
