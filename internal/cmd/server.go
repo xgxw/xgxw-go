@@ -49,6 +49,7 @@ var serverCmd = &cobra.Command{
 			file := v1.Group("/file")
 			file.GET("/public/*", articleCtrl.Get)
 			file.GET("/*", articleCtrl.Get, jwtMiddlewareFunc)
+			file.POST("/*", articleCtrl.Put, jwtMiddlewareFunc)
 			file.PUT("/*", articleCtrl.Put, jwtMiddlewareFunc)
 			file.DELETE("/*", articleCtrl.Put, jwtMiddlewareFunc)
 			file.GET("/public/catalog", articleCtrl.GetPublicCatalog)
