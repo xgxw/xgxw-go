@@ -3,17 +3,18 @@ package services
 import (
 	"context"
 
+	"github.com/everywan/foundation-go/storage"
 	fstorage "github.com/everywan/foundation-go/storage"
 	"github.com/everywan/xgxw"
 )
 
 // FileService is ...
 type FileService struct {
-	storage fstorage.StorageClientInterface
+	storage fstorage.ClientInterface
 }
 
 // NewFileService create FileService
-func NewFileService(storage fstorage.StorageClientInterface) *FileService {
+func NewFileService(storage fstorage.ClientInterface) *FileService {
 	return &FileService{
 		storage: storage,
 	}
@@ -38,6 +39,22 @@ func (this *FileService) Get(ctx context.Context, fid string) (file *xgxw.File, 
 
 // Put is ...
 func (this *FileService) Put(ctx context.Context, fid, content string) (err error) {
-	// 判断 fid 格式, .. 等可能影响权限?
 	return this.storage.PutObject(ctx, fid, []byte(content))
+}
+
+// Del is ...
+func (this *FileService) Del(ctx context.Context, fid string) (err error) {
+	return this.storage.DelObject(ctx, fid)
+}
+
+// DelFiles is ...
+func (this *FileService) DelFiles(ctx context.Context, fids []string) (err error) {
+	return this.storage.DelObjects(ctx, fids)
+}
+
+// GetList is ...
+func (this *FileService) GetList(ctx context.Context, path string,
+	opts storage.ListOption) (catalog string, err error) {
+	data, err := this.storage.GetList(ctx, path, opts)
+	return string(data), err
 }

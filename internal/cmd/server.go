@@ -50,6 +50,9 @@ var serverCmd = &cobra.Command{
 			file.GET("/public/*", articleCtrl.Get)
 			file.GET("/*", articleCtrl.Get, jwtMiddlewareFunc)
 			file.PUT("/*", articleCtrl.Put, jwtMiddlewareFunc)
+			file.DELETE("/*", articleCtrl.Put, jwtMiddlewareFunc)
+			file.GET("/public/catalog", articleCtrl.GetPublicCatalog)
+			file.GET("/catalog", articleCtrl.GetCatalog, jwtMiddlewareFunc)
 		}
 
 		quit := make(chan os.Signal, 1)
