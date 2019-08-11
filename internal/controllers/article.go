@@ -3,7 +3,6 @@ package controllers
 import (
 	"context"
 	"net/http"
-	"strings"
 
 	flog "github.com/everywan/foundation-go/log"
 	"github.com/everywan/foundation-go/storage"
@@ -109,37 +108,38 @@ type GetCatalogRequestCarrier struct {
 	Path    string             `json:"path" form:"path" query:"path"`
 	Options storage.ListOption `json:"options" form:"options" query:"options"`
 }
+type GetCatalogResopnseCarrier struct {
+	Catalog string   `json:"catalog" form:"catalog" query:"catalog"`
+	Paths   []string `json:"paths" form:"paths" query:"paths"`
+}
 
 // GetPublicCatalog is ...
 func (this *ArticleController) GetPublicCatalog(ctx echo.Context) error {
-	r := new(GetCatalogRequestCarrier)
-	if err := ctx.Bind(r); err != nil {
-		this.logger.Error(err)
-		return ctx.String(http.StatusBadRequest, "please input fids")
-	}
-	if strings.Contains(r.Path, "..") {
-		return ctx.String(http.StatusBadRequest, "path can't contains `..`!")
-	}
-	r.Path = "public/" + r.Path
-	catalog, err := this.fileSvc.GetCatalog(context.Background(), r.Path, r.Options)
-	if err != nil {
-		this.logger.Error(err)
-		return ctx.NoContent(http.StatusNotFound)
-	}
-	return ctx.String(http.StatusOK, catalog)
+	return this.getCatalog(ctx, true)
 }
 
 // GetCatalog is ...
 func (this *ArticleController) GetCatalog(ctx echo.Context) error {
+	return this.getCatalog(ctx, false)
+}
+
+func (this *ArticleController) getCatalog(ctx echo.Context, onlyPublic bool) error {
 	r := new(GetCatalogRequestCarrier)
 	if err := ctx.Bind(r); err != nil {
 		this.logger.Error(err)
 		return ctx.String(http.StatusBadRequest, "please input fids")
 	}
-	catalog, err := this.fileSvc.GetCatalog(context.Background(), r.Path, r.Options)
+	if onlyPublic {
+		r.Path = "public/" + r.Path
+	}
+	catalog, paths, err := this.fileSvc.GetCatalog(context.Background(), r.Path, r.Options)
+	resp := &GetCatalogResopnseCarrier{
+		Catalog: catalog,
+		Paths:   paths,
+	}
 	if err != nil {
 		this.logger.Error(err)
 		return ctx.NoContent(http.StatusNotFound)
 	}
-	return ctx.String(http.StatusOK, catalog)
+	return ctx.JSON(http.StatusOK, resp)
 }

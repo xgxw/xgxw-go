@@ -54,7 +54,7 @@ func (this *FileService) DelFiles(ctx context.Context, fids []string) (err error
 
 // GetList is ...
 func (this *FileService) GetCatalog(ctx context.Context, path string,
-	opts storage.ListOption) (catalog string, err error) {
-	data, err := this.storage.GetCatalog(ctx, path, opts)
-	return string(data), err
+	opts storage.ListOption) (catalog string, paths []string, err error) {
+	data, paths, err := this.storage.GetCatalog(ctx, path, opts)
+	return string(data), paths, err
 }

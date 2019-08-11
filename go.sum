@@ -37,10 +37,8 @@ github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21/go.mod h1
 github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFPTqq+I=
 github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 h1:Yzb9+7DPaBjB8zlTR87/ElzFsnQfuHnVUVqpZZIcV5Y=
 github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5/go.mod h1:a2zkGnVExMxdzMo3M0Hi/3sEU+cWnZpSni0O6/Yb/P0=
-github.com/everywan/foundation-go v0.0.0-20190811053509-01283a2a96d6 h1:fMXbUlHy+i2zBBKKNi7eLrmQH/6WIjsb2YJ1XkanQcE=
-github.com/everywan/foundation-go v0.0.0-20190811053509-01283a2a96d6/go.mod h1:YGjJkyYZz1CWnQ9+kC7wHNHRmV4nP82YohMAcYw0MM8=
-github.com/everywan/foundation-go v0.0.0-20190811113305-1ec5a9d87f37 h1:5mUlC2WplAXdZNRybnlY4TgpbwlAhDABML2V4v7kvPo=
-github.com/everywan/foundation-go v0.0.0-20190811113305-1ec5a9d87f37/go.mod h1:YGjJkyYZz1CWnQ9+kC7wHNHRmV4nP82YohMAcYw0MM8=
+github.com/everywan/foundation-go v0.0.0-20190811125436-dcb313c52597 h1:43gmrHy99AxxcW43BcbWcNx7FQj3Vp6blgIzEpCjkjQ=
+github.com/everywan/foundation-go v0.0.0-20190811125436-dcb313c52597/go.mod h1:YGjJkyYZz1CWnQ9+kC7wHNHRmV4nP82YohMAcYw0MM8=
 github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568/go.mod h1:xEzjJPgXI435gkrCt3MPfRiAkVrwSbHsst4LCFVfpJc=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
