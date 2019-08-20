@@ -25,7 +25,6 @@ var _ xgxw.FileService = &FileService{}
 
 // Get is ...
 func (this *FileService) Get(ctx context.Context, fid string) (file *xgxw.File, err error) {
-	// 判断 fid 格式, .. 等可能影响权限?
 	file = new(xgxw.File)
 	buf, err := this.storage.GetObject(ctx, fid)
 	if err != nil {

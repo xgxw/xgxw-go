@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	flog "github.com/everywan/foundation-go/log"
 	"github.com/everywan/foundation-go/storage"
@@ -11,22 +12,22 @@ import (
 )
 
 type (
-	// ArticleController is ...
-	ArticleController struct {
+	// FileController is ...
+	FileController struct {
 		logger  *flog.Logger
 		fileSvc xgxw.FileService
 	}
 )
 
-// NewArticleController is ...
-func NewArticleController(logger *flog.Logger, fileSvc xgxw.FileService) *ArticleController {
-	return &ArticleController{
+// NewFileController is ...
+func NewFileController(logger *flog.Logger, fileSvc xgxw.FileService) *FileController {
+	return &FileController{
 		logger:  logger,
 		fileSvc: fileSvc,
 	}
 }
 
-func (this *ArticleController) getFidFromPath(ctx echo.Context) string {
+func (this *FileController) getFidFromPath(ctx echo.Context) string {
 	path := ctx.Request().URL.Path
 	if len(path) < 9 {
 		return ""
@@ -34,18 +35,21 @@ func (this *ArticleController) getFidFromPath(ctx echo.Context) string {
 	return path[9:]
 }
 
-// Get is 获取Article.md
-func (this *ArticleController) Get(ctx echo.Context) error {
+// Get is 获取File.md
+func (this *FileController) Get(ctx echo.Context) error {
 	fid := this.getFidFromPath(ctx)
 	if fid == "" {
 		return ctx.NoContent(http.StatusNotFound)
 	}
-	article, err := this.fileSvc.Get(context.Background(), fid)
+	if strings.HasSuffix(fid, "/") {
+		return ctx.String(http.StatusRequestedRangeNotSatisfiable, "path is dir")
+	}
+	file, err := this.fileSvc.Get(context.Background(), fid)
 	if err != nil {
 		this.logger.Error(err)
 		return ctx.NoContent(http.StatusNotFound)
 	}
-	return ctx.JSON(http.StatusOK, article)
+	return ctx.JSON(http.StatusOK, file)
 }
 
 type putRequestCarrier struct {
@@ -53,10 +57,13 @@ type putRequestCarrier struct {
 }
 
 // Put is ...
-func (this *ArticleController) Put(ctx echo.Context) error {
+func (this *FileController) Put(ctx echo.Context) error {
 	fid := this.getFidFromPath(ctx)
 	if fid == "" {
 		return ctx.NoContent(http.StatusNotFound)
+	}
+	if strings.HasSuffix(fid, "/") {
+		return ctx.String(http.StatusRequestedRangeNotSatisfiable, "path is dir")
 	}
 	r := new(putRequestCarrier)
 	if err := ctx.Bind(r); err != nil {
@@ -72,10 +79,13 @@ func (this *ArticleController) Put(ctx echo.Context) error {
 }
 
 // Del is ...
-func (this *ArticleController) Del(ctx echo.Context) error {
+func (this *FileController) Del(ctx echo.Context) error {
 	fid := this.getFidFromPath(ctx)
 	if fid == "" {
 		return ctx.NoContent(http.StatusNotFound)
+	}
+	if strings.HasSuffix(fid, "/") {
+		return ctx.String(http.StatusRequestedRangeNotSatisfiable, "path is dir")
 	}
 	err := this.fileSvc.Del(context.Background(), fid)
 	if err != nil {
@@ -90,7 +100,7 @@ type DelFilesRequestCarrier struct {
 }
 
 // DelFiles is ...
-func (this *ArticleController) DelFiles(ctx echo.Context) error {
+func (this *FileController) DelFiles(ctx echo.Context) error {
 	r := new(DelFilesRequestCarrier)
 	if err := ctx.Bind(r); err != nil {
 		this.logger.Error(err)
@@ -105,7 +115,6 @@ func (this *ArticleController) DelFiles(ctx echo.Context) error {
 }
 
 type GetCatalogRequestCarrier struct {
-	Path    string             `json:"path" form:"path" query:"path"`
 	Options storage.ListOption `json:"options" form:"options" query:"options"`
 }
 type GetCatalogResopnseCarrier struct {
@@ -113,26 +122,21 @@ type GetCatalogResopnseCarrier struct {
 	Paths   []string `json:"paths" form:"paths" query:"paths"`
 }
 
-// GetPublicCatalog is ...
-func (this *ArticleController) GetPublicCatalog(ctx echo.Context) error {
-	return this.getCatalog(ctx, true)
-}
-
 // GetCatalog is ...
-func (this *ArticleController) GetCatalog(ctx echo.Context) error {
-	return this.getCatalog(ctx, false)
-}
-
-func (this *ArticleController) getCatalog(ctx echo.Context, onlyPublic bool) error {
+func (this *FileController) GetCatalog(ctx echo.Context) error {
+	path := this.getFidFromPath(ctx)
+	if path == "" {
+		return ctx.NoContent(http.StatusNotFound)
+	}
+	if !strings.HasSuffix(path, "/") {
+		return ctx.String(http.StatusRequestedRangeNotSatisfiable, "path must be dir")
+	}
 	r := new(GetCatalogRequestCarrier)
 	if err := ctx.Bind(r); err != nil {
 		this.logger.Error(err)
-		return ctx.String(http.StatusBadRequest, "please input fids")
+		return ctx.String(http.StatusBadRequest, "please input params")
 	}
-	if onlyPublic {
-		r.Path = "public/" + r.Path
-	}
-	catalog, paths, err := this.fileSvc.GetCatalog(context.Background(), r.Path, r.Options)
+	catalog, paths, err := this.fileSvc.GetCatalog(context.Background(), path, r.Options)
 	resp := &GetCatalogResopnseCarrier{
 		Catalog: catalog,
 		Paths:   paths,

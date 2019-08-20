@@ -24,7 +24,7 @@ var serverCmd = &cobra.Command{
 
 		boot, err := newBootstrap(opts)
 		handleInitError("bootstarp", err)
-		articleCtrl := controllers.NewArticleController(boot.Logger, boot.FileSvc)
+		fileCtrl := controllers.NewFileController(boot.Logger, boot.FileSvc)
 
 		e := echo.New()
 		jwtMiddleware := middlewares.NewJWTMiddlewares(boot.Logger, boot.Options.Auth)
@@ -47,13 +47,17 @@ var serverCmd = &cobra.Command{
 
 		{
 			file := v1.Group("/file")
-			file.GET("/public/*", articleCtrl.Get)
-			file.GET("/*", articleCtrl.Get, jwtMiddlewareFunc)
-			file.POST("/*", articleCtrl.Put, jwtMiddlewareFunc)
-			file.PUT("/*", articleCtrl.Put, jwtMiddlewareFunc)
-			file.DELETE("/*", articleCtrl.Put, jwtMiddlewareFunc)
-			file.GET("/public/catalog", articleCtrl.GetPublicCatalog)
-			file.GET("/catalog", articleCtrl.GetCatalog, jwtMiddlewareFunc)
+			file.GET("/public/*", fileCtrl.Get)
+			file.GET("/*", fileCtrl.Get, jwtMiddlewareFunc)
+			file.POST("/*", fileCtrl.Put, jwtMiddlewareFunc)
+			file.PUT("/*", fileCtrl.Put, jwtMiddlewareFunc)
+			file.DELETE("/*", fileCtrl.Del, jwtMiddlewareFunc)
+		}
+
+		{
+			catalog := v1.Group("/catalog")
+			catalog.GET("/public/*", fileCtrl.GetCatalog)
+			catalog.GET("/*", fileCtrl.GetCatalog, jwtMiddlewareFunc)
 		}
 
 		quit := make(chan os.Signal, 1)
