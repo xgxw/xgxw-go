@@ -35,6 +35,14 @@ func (this *FileController) getFidFromPath(ctx echo.Context) string {
 	return path[9:]
 }
 
+func (this *FileController) getPathFromPath(ctx echo.Context) string {
+	path := ctx.Request().URL.Path
+	if len(path) < 12 {
+		return ""
+	}
+	return path[12:]
+}
+
 // Get is 获取File.md
 func (this *FileController) Get(ctx echo.Context) error {
 	fid := this.getFidFromPath(ctx)
@@ -124,7 +132,7 @@ type GetCatalogResopnseCarrier struct {
 
 // GetCatalog is ...
 func (this *FileController) GetCatalog(ctx echo.Context) error {
-	path := this.getFidFromPath(ctx)
+	path := this.getPathFromPath(ctx)
 	if path == "" {
 		return ctx.NoContent(http.StatusNotFound)
 	}
