@@ -8,6 +8,7 @@ import (
 	flog "github.com/everywan/foundation-go/log"
 	"github.com/everywan/foundation-go/storage"
 	"github.com/everywan/xgxw"
+	"github.com/everywan/xgxw/internal/utils"
 	"github.com/labstack/echo"
 )
 
@@ -29,6 +30,7 @@ func NewFileController(logger *flog.Logger, fileSvc xgxw.FileService) *FileContr
 
 func (this *FileController) getFidFromPath(ctx echo.Context) string {
 	path := ctx.Request().URL.Path
+	path = utils.CleanPath(path)
 	if len(path) < 9 {
 		return ""
 	}
@@ -37,6 +39,7 @@ func (this *FileController) getFidFromPath(ctx echo.Context) string {
 
 func (this *FileController) getPathFromPath(ctx echo.Context) string {
 	path := ctx.Request().URL.Path
+	path = utils.CleanPath(path)
 	if len(path) < 12 {
 		return ""
 	}
@@ -135,9 +138,6 @@ func (this *FileController) GetCatalog(ctx echo.Context) error {
 	path := this.getPathFromPath(ctx)
 	if path == "" {
 		return ctx.NoContent(http.StatusNotFound)
-	}
-	if !strings.HasSuffix(path, "/") {
-		return ctx.String(http.StatusRequestedRangeNotSatisfiable, "path must be dir")
 	}
 	r := new(GetCatalogRequestCarrier)
 	if err := ctx.Bind(r); err != nil {
