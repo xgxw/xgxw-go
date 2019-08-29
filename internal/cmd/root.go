@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	flog "github.com/everywan/foundation-go/log"
-	fstorage "github.com/everywan/foundation-go/storage"
-	"github.com/everywan/xgxw/internal/middlewares"
+	flog "github.com/xgxw/foundation-go/log"
+	fstorage "github.com/xgxw/foundation-go/storage"
+	"github.com/xgxw/xgxw-go/internal/middlewares"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

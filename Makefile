@@ -1,5 +1,5 @@
 NAME = xgxw
-PACKAGE = github.com/everywan/xgxw
+PACKAGE = github.com/xgxw/xgxw-go
 MAIN = $(PACKAGE)/entry
 
 DEFAULT_TAG = xgxw:latest

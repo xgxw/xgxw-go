@@ -1,6 +1,6 @@
 package main
 
-import "github.com/everywan/xgxw/internal/cmd"
+import "github.com/xgxw/xgxw-go/internal/cmd"
 
 func main() {
 	cmd.Execute()

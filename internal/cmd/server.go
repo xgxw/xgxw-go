@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/everywan/xgxw/internal/controllers"
-	"github.com/everywan/xgxw/internal/middlewares"
+	"github.com/xgxw/xgxw-go/internal/controllers"
+	"github.com/xgxw/xgxw-go/internal/middlewares"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/spf13/cobra"

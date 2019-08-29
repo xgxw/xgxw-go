@@ -1,7 +1,7 @@
 package codes
 
 import (
-	ferrors "github.com/everywan/foundation-go/errors"
+	ferrors "github.com/xgxw/foundation-go/errors"
 )
 
 // 错误常量

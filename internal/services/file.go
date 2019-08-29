@@ -3,9 +3,8 @@ package services
 import (
 	"context"
 
-	"github.com/everywan/foundation-go/storage"
-	fstorage "github.com/everywan/foundation-go/storage"
-	"github.com/everywan/xgxw"
+	fstorage "github.com/xgxw/foundation-go/storage"
+	"github.com/xgxw/xgxw-go"
 )
 
 // FileService is ...
@@ -53,7 +52,7 @@ func (this *FileService) DelFiles(ctx context.Context, fids []string) (err error
 
 // GetList is ...
 func (this *FileService) GetCatalog(ctx context.Context, path string,
-	opts storage.ListOption) (catalog string, paths []string, err error) {
+	opts fstorage.ListOption) (catalog string, paths []string, err error) {
 	data, paths, err := this.storage.GetCatalog(ctx, path, opts)
 	return string(data), paths, err
 }

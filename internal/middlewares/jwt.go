@@ -5,8 +5,8 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	flog "github.com/everywan/foundation-go/log"
-	"github.com/everywan/xgxw/internal/constants"
+	flog "github.com/xgxw/foundation-go/log"
+	"github.com/xgxw/xgxw-go/internal/constants"
 	"github.com/labstack/echo"
 	"github.com/pkg/errors"
 )

@@ -4,11 +4,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/everywan/xgxw"
-	"github.com/everywan/xgxw/internal/services"
+	"github.com/xgxw/xgxw-go"
+	"github.com/xgxw/xgxw-go/internal/services"
 
-	flog "github.com/everywan/foundation-go/log"
-	fstorage "github.com/everywan/foundation-go/storage"
+	flog "github.com/xgxw/foundation-go/log"
+	fstorage "github.com/xgxw/foundation-go/storage"
 )
 
 // Bootstrap 公用实例初始化

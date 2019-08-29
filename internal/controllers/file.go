@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strings"
 
-	flog "github.com/everywan/foundation-go/log"
-	"github.com/everywan/foundation-go/storage"
-	"github.com/everywan/xgxw"
-	"github.com/everywan/xgxw/internal/utils"
 	"github.com/labstack/echo"
+	flog "github.com/xgxw/foundation-go/log"
+	fstorage "github.com/xgxw/foundation-go/storage"
+	"github.com/xgxw/xgxw-go"
+	"github.com/xgxw/xgxw-go/internal/utils"
 )
 
 type (
@@ -126,7 +126,7 @@ func (this *FileController) DelFiles(ctx echo.Context) error {
 }
 
 type GetCatalogRequestCarrier struct {
-	Options storage.ListOption `json:"options" form:"options" query:"options"`
+	Options fstorage.ListOption `json:"options" form:"options" query:"options"`
 }
 type GetCatalogResopnseCarrier struct {
 	Catalog string   `json:"catalog" form:"catalog" query:"catalog"`
