@@ -171,6 +171,8 @@ github.com/valyala/fasttemplate v1.0.1 h1:tY9CJiPnMXf1ERmG2EyK7gNUd+c6RKGD0IfU8W
 github.com/valyala/fasttemplate v1.0.1/go.mod h1:UQGH1tvbgY+Nz5t2n7tXsz52dQxojPUpymEIMZ47gx8=
 github.com/xgxw/foundation-go v0.0.0-20190829071051-03209fb8d3ae h1:aj2Vu7hWUp+92NvPHNJ+KwhBZFJZybhGC+SkygOsTDg=
 github.com/xgxw/foundation-go v0.0.0-20190829071051-03209fb8d3ae/go.mod h1:ZZUhsue/37QS4UY5n/tofweDaZdy30Z7Bbofw3/qL+M=
+github.com/xgxw/foundation-go v0.0.0-20190829111842-68fe84c53a50 h1:r4Hi1VOAFv1ZuP/HraZTQl5yPJBLmge/NWyq2jxnljs=
+github.com/xgxw/foundation-go v0.0.0-20190829111842-68fe84c53a50/go.mod h1:ZZUhsue/37QS4UY5n/tofweDaZdy30Z7Bbofw3/qL+M=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
 go.opencensus.io v0.18.0/go.mod h1:vKdFvxhtzZ9onBp9VKHK8z/sRpBMnKAsufL7wlDrCOA=
 go.opencensus.io v0.19.1/go.mod h1:gug0GbSHa8Pafr0d2urOSgoXHZ6x/RUlaiT0d9pqb4A=
