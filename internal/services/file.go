@@ -9,13 +9,15 @@ import (
 
 // FileService is ...
 type FileService struct {
-	storage fstorage.ClientInterface
+	defaultExpired int64
+	storage        fstorage.ClientInterface
 }
 
 // NewFileService create FileService
-func NewFileService(storage fstorage.ClientInterface) *FileService {
+func NewFileService(storage fstorage.ClientInterface, defaultExpired int64) *FileService {
 	return &FileService{
-		storage: storage,
+		storage:        storage,
+		defaultExpired: defaultExpired,
 	}
 }
 
@@ -55,4 +57,13 @@ func (this *FileService) GetCatalog(ctx context.Context, path string,
 	opts fstorage.ListOption) (catalog string, paths []string, err error) {
 	data, paths, err := this.storage.GetCatalog(ctx, path, opts)
 	return string(data), paths, err
+}
+
+// SignURL is ...
+func (this *FileService) SignURL(ctx context.Context, fid string,
+	method fstorage.HTTPMethod, expiredInSec int64) (url string, err error) {
+	if expiredInSec == 0 {
+		expiredInSec = this.defaultExpired
+	}
+	return this.storage.SignURL(ctx, fid, method, expiredInSec, 0)
 }

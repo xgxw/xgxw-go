@@ -28,27 +28,35 @@ func NewFileController(logger *flog.Logger, fileSvc xgxw.FileService) *FileContr
 	}
 }
 
-func (this *FileController) getFidFromPath(ctx echo.Context) string {
+func getFidFromPath(ctx echo.Context, prefix string) string {
 	path := ctx.Request().URL.Path
 	path = utils.CleanPath(path)
-	if len(path) < 9 {
+	if !strings.HasPrefix(path, prefix) {
 		return ""
 	}
-	return path[9:]
+	return path[len(prefix):]
 }
 
-func (this *FileController) getPathFromPath(ctx echo.Context) string {
-	path := ctx.Request().URL.Path
-	path = utils.CleanPath(path)
-	if len(path) < 12 {
-		return ""
+// Get is 获取File.md
+func (this *FileController) GetURL(ctx echo.Context) error {
+	fid := getFidFromPath(ctx, "/v1/url/")
+	if fid == "" {
+		return ctx.NoContent(http.StatusNotFound)
 	}
-	return path[12:]
+	if strings.HasSuffix(fid, "/") {
+		return ctx.String(http.StatusRequestedRangeNotSatisfiable, "path is dir")
+	}
+	url, err := this.fileSvc.SignURL(context.Background(), fid, fstorage.HTTPGet, 0)
+	if err != nil {
+		this.logger.Error(err)
+		return ctx.NoContent(http.StatusNotFound)
+	}
+	return ctx.String(http.StatusOK, url)
 }
 
 // Get is 获取File.md
 func (this *FileController) Get(ctx echo.Context) error {
-	fid := this.getFidFromPath(ctx)
+	fid := getFidFromPath(ctx, "/v1/file/")
 	if fid == "" {
 		return ctx.NoContent(http.StatusNotFound)
 	}
@@ -69,7 +77,7 @@ type putRequestCarrier struct {
 
 // Put is ...
 func (this *FileController) Put(ctx echo.Context) error {
-	fid := this.getFidFromPath(ctx)
+	fid := getFidFromPath(ctx, "/v1/file/")
 	if fid == "" {
 		return ctx.NoContent(http.StatusNotFound)
 	}
@@ -91,7 +99,7 @@ func (this *FileController) Put(ctx echo.Context) error {
 
 // Del is ...
 func (this *FileController) Del(ctx echo.Context) error {
-	fid := this.getFidFromPath(ctx)
+	fid := getFidFromPath(ctx, "/v1/file/")
 	if fid == "" {
 		return ctx.NoContent(http.StatusNotFound)
 	}
@@ -135,7 +143,7 @@ type GetCatalogResopnseCarrier struct {
 
 // GetCatalog is ...
 func (this *FileController) GetCatalog(ctx echo.Context) error {
-	path := this.getPathFromPath(ctx)
+	path := getFidFromPath(ctx, "/v1/catalog/")
 	if path == "" {
 		return ctx.NoContent(http.StatusNotFound)
 	}

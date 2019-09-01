@@ -8,11 +8,11 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/xgxw/xgxw-go/internal/controllers"
-	"github.com/xgxw/xgxw-go/internal/middlewares"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/spf13/cobra"
+	"github.com/xgxw/xgxw-go/internal/controllers"
+	"github.com/xgxw/xgxw-go/internal/middlewares"
 )
 
 var serverCmd = &cobra.Command{
@@ -46,12 +46,18 @@ var serverCmd = &cobra.Command{
 		}
 
 		{
+			// 返回文件
 			file := v1.Group("/file")
 			file.GET("/public/*", fileCtrl.Get)
 			file.GET("/*", fileCtrl.Get, jwtMiddlewareFunc)
 			file.POST("/*", fileCtrl.Put, jwtMiddlewareFunc)
 			file.PUT("/*", fileCtrl.Put, jwtMiddlewareFunc)
 			file.DELETE("/*", fileCtrl.Del, jwtMiddlewareFunc)
+
+			// 返回url
+			sign := v1.Group("/url")
+			sign.GET("/public/*", fileCtrl.GetURL)
+			sign.GET("/*", fileCtrl.GetURL, jwtMiddlewareFunc)
 		}
 
 		{
@@ -95,5 +101,6 @@ type (
 	ServerOps struct {
 		HTTP            HTTPOps  `mapstructure:"http" yaml:"http"`
 		CorsAllowOrigin []string `mapstructure:"cors_allow_origin"`
+		DefaultExpired  int64    `mapstructure:"default_expired"`
 	}
 )

@@ -24,7 +24,11 @@ func newBootstrap(opts *ApplicationOps) (boot *bootstrap, err error) {
 	if err != nil {
 		return boot, err
 	}
-	fileSvc := services.NewFileService(storage)
+	defaultExpired := opts.Server.DefaultExpired
+	if defaultExpired == 0 {
+		defaultExpired = 60
+	}
+	fileSvc := services.NewFileService(storage, defaultExpired)
 	boot = &bootstrap{
 		Logger:  logger,
 		FileSvc: fileSvc,

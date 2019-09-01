@@ -25,4 +25,5 @@ type FileService interface {
 	DelFiles(ctx context.Context, fids []string) (err error)
 	// GetCatalog is 获取文件列表, 返回目录树的json字符串
 	GetCatalog(ctx context.Context, path string, opts storage.ListOption) (catalog string, paths []string, err error)
+	SignURL(ctx context.Context, fid string, method storage.HTTPMethod, expiredInSec int64) (url string, err error)
 }
