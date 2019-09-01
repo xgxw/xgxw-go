@@ -4,7 +4,7 @@ MAIN = $(PACKAGE)/entry
 
 DEFAULT_TAG = xgxw:latest
 DEFAULT_BUILD_TAG = latest
-REMOTE_IMAGE = registry.cn-hongkong.aliyuncs.com/everywan/xgxw
+REMOTE_IMAGE = registry.cn-hongkong.aliyuncs.com/xgxw/xgxw-go
 
 BUILD_FLAGS= -mod vendor -v -o $(NAME) entry/main.go
 
@@ -49,7 +49,7 @@ docker: docker-build
 push: docker
 	@docker tag $(DEFAULT_TAG) $(REMOTE_IMAGE_TAG)
 	$(call color_out,$(CL_BLUE),"Pushing image $(REMOTE_IMAGE_TAG) ...")
-	@docker push $(REMOTE_IMAGE_TAG)
+	@sudo docker push $(REMOTE_IMAGE_TAG)
 	$(call color_out,$(CL_ORANGE),"Done")
 
 build:
