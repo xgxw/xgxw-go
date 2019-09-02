@@ -47,6 +47,7 @@ func (this *FileController) GetURL(ctx echo.Context) error {
 		return ctx.String(http.StatusRequestedRangeNotSatisfiable, "path is dir")
 	}
 	url, err := this.fileSvc.SignURL(context.Background(), fid, fstorage.HTTPGet, 0)
+	url = url[:4] + "s" + url[4:]
 	if err != nil {
 		this.logger.Error(err)
 		return ctx.NoContent(http.StatusNotFound)

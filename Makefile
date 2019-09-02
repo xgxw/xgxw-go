@@ -32,13 +32,16 @@ define color_out
 	@echo $(1)$(2)$(CL_NONE)
 endef
 
+docker-build:export GO111MODULE=on
+docker-build:export CGO_ENABLED=0
 docker-build:
 	@go mod vendor
 	$(call color_out,$(CL_BLUE),"Building binary in docker ...")
-	@docker run --rm -v "$(PWD)":/go/src/$(PACKAGE) \
-		-w /go/src/$(PACKAGE) \
-		golang:$(BUILD_TAG) \
-		go build -v -o $(NAME) $(MAIN)
+#	@docker run --rm -v "$(PWD)":/go/src/$(PACKAGE) \
+#		-w /go/src/$(PACKAGE) \
+#		golang:$(BUILD_TAG) \
+#		go build -v -o $(NAME) $(MAIN)
+	@go build --ldflags '-extldflags "-static"' -v -o $(NAME) $(MAIN)
 	$(call color_out,$(CL_GREEN),"Building binary ok")
 
 docker: docker-build
