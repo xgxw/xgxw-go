@@ -1,0 +1,138 @@
+= xgxw-go
+
+link:https://goreportcard.com/report/github.com/xgxw/xgxw-go[image:https://goreportcard.com/badge/github.com/xgxw/xgxw-go[]]
+
+xgxw-go 是 link:www.xiagaoxiawan.com[www.xiagaoxiawan.com] 的后端.
+
+详细了解产品设计, 业务需求和API后, 后端设计如下
+
+.后端提供的能力
+. 获取文章内容. 原始文档或者后端渲染(后端渲染先不实现)
+. 获取路径下文档列表的能力(文档包括 文件和目录)
+. 获取目录树的能力
+. 搜索文档的能力
+
+== 数据结构设计
+产品设计如下
+. 文章存储
+  .. 实际内容存储到 block. 即 files 表
+. path/article 需要考虑如何设计
+  .. path 一样要被列出来, 所以path也应是一条记录.
+  .. path 的属性问题. path 也可以 移动/重命名
+  .. 目录树如何实现(path相关)
+  .. 目录检索如何实现
+
+.两种可以参考的方式
+. linux inode 方式
+. oss 直接返回路径的方式. 如 `ls /; /a/b/c.adoc, /aa.doc`
+  .. 缺点: 不容易被改名. 改名需要修改所有的记录
+
+经过考虑, 决定使用 linux inode 的方式. 即符合常识, 又易扩展.
+
+具体设计 伪代码如下footnote:[时间:2020-05-02, 后续请参考代码, 大逻辑不变时, 不保证同步更新].
+=== files
+files 存储文件, 这块没什么争议的
+[source,go]
+----
+files{
+  id
+  url: 相对路径, BaseUrl 项目配置文件指定
+  name
+  time
+}
+files
+  Get(id)(File,error)
+  Save(data)(File,error)
+----
+
+=== inode
+从 inode 方式中学到的一个思想就是: 由 path 控制文档, 而不是文档控制path.
+
+起初设计时, 总容易陷入一个误区, 就是 path 是 document 的一个属性. 这么
+理解是错误的, 应该是 document 是 path 内容的一部分.
+试想一下, 如果 path 是 document 的一部分, 那么 `mv dir` 的操作是不是过于
+复杂和不合理呢?
+
+.使用inode方式设计 article/path 的存储
+. inode表 存储文档属性. 文章/目录都是文档.
+  .. articles 表存储 文章'内容'. 在这里, 内容指 fid/score/visited/tags 等,
+    文档实际内容存储在 files 表里.
+  .. dirs 表存储目录内容. 在这里, 内容指 该路径下所有文档的 inode_id 数组.
+  .. 使用工厂方式. inode 用 articleSvc/dirSvc
+. tree 通过便利inodes实现.
+  .. 为加快查询, 初始化时生成 tree, 保存在内存, 后续更新时同步更新 tree.
+
+.当前设计的限制
+. 一个dir下, 文件数量上线是1000. mysql 单列数据太大不利于操作.
+  .. 后期可以考虑将 dirs 设计为 `id|dir_id|fid` 的方式(一个文件一列), 
+    如此便无上限限制.
+. tree 在内存缓存, 限制整体数量上限. 当限制传输大小在 500kb 以内, 数量大概5000个
+  .. 后期可以考虑分解 tree 的方式实现, tree 分多个key.
+  .. tree 也可以以 json 的方式存储在其他缓存中.
+
+其实, 在目前自己使用的情况下, 完全达不到上线. 5000 个文章能写十几年(每天一篇).
+而且也不会在一个文件下写几千篇文章.
+
+.注意
+. treeSvc 单独设计为 Svc, 内部实现对外屏蔽. 方便后续更改.
+  .. tree 考虑合适的方式接收inode的更改.
+. docSvc 对外提供服务. docSvc 查询 inodeSvc 获取文档元数据.
+  docSvc 通过工厂模式查询 articleSvc/dirSvc 扩展属性.
+
+查找时, 先查找 inode, 然后再找block(article/dir), 拼成文档.
+
+插入时, 先写block, 再写入inode.
+
+[source,go]
+----
+// inodes
+inodes{
+  id
+  type d/l/-
+  name
+  block_id 对应dir_id/article_id
+  author_id
+  time
+}
+authors{
+  id
+  name
+  time
+}
+
+// dirs inodes.type == d
+dirs{
+  id
+  contents 存储下属的文件列表 inode_id 集合
+}
+// articles inodes.type == -
+articles{
+  id
+  fid
+  visited
+  score
+  tag
+  desc
+}
+
+treeSvc
+  Get()
+
+docSvc
+  Get()
+  LS()
+  Find()
+
+inodeSvc
+  Get()
+
+IBlockFileInterface
+  Get()
+  Post()
+
+articleSvc
+  Get()
+  Post() 目前不实现
+dirSvc
+  Get()
+----
