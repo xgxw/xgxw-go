@@ -1,0 +1,358 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "xgxw",
+    "description": "www.xiagaoxiawan.com",
+    "version": "0.0.1",
+    "contact": {
+      "email": "zhensheng.five@google.com"
+    }
+  },
+  "host": "127.0.0.1",
+  "basePath": "/v1",
+  "tags": [
+    {
+      "name": "Blog",
+      "description": "博客API, Article",
+      "externalDocs": {
+        "description": "",
+        "url": "http://github.com/xgxw/xgxw-go"
+      }
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/article": {
+      "get": {
+        "tags": [
+          "Blog"
+        ],
+        "summary": "获取文章内容",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "description": "文章路径, path可能是多层的, 如 /a/b/c. 默认 /README.adoc",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "row",
+            "in": "query",
+            "description": "是否返回原始内容. (后台渲染暂时不做)",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/Article"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/ls": {
+      "get": {
+        "tags": [
+          "Blog"
+        ],
+        "summary": "查看文件列表",
+        "description": "根据指定的限制条件, 返回文件列表, 之返回当前路径下的 文件/目录 列表",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "description": "指定路径, 只显示该路径下的内容. 默认 当前路径",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "author_id",
+            "in": "query",
+            "description": "根据作者id筛选",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "模糊匹配title",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "分页条件, 默认10",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "分页条件, 默认1",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "last_id",
+            "in": "query",
+            "description": "分页条件,上一次查询的最后一个id, 可选, 提高查询效率使用, 默认0",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "排序依据, 默认根据id",
+            "required": false,
+            "type": "integer",
+            "enum": [
+              {
+                "0": "default"
+              },
+              {
+                "1": "score"
+              },
+              {
+                "2": "visited"
+              },
+              {
+                "4": "created_at"
+              }
+            ]
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "排序依据, 默认逆序",
+            "required": false,
+            "type": "integer",
+            "enum": [
+              {
+                "-1": "desc"
+              },
+              {
+                "1": "asc"
+              }
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "总数",
+                  "example": 100
+                },
+                "page": {
+                  "type": "integer",
+                  "description": "分页",
+                  "example": 2
+                },
+                "limit": {
+                  "type": "integer",
+                  "description": "每页数量",
+                  "example": 10
+                },
+                "has_more": {
+                  "type": "boolean",
+                  "description": "是否还有更多",
+                  "example": "true"
+                },
+                "last_id": {
+                  "type": "integer",
+                  "description": "本次查询的最后一个id",
+                  "example": 30
+                },
+                "articles": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Article"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/tree": {
+      "get": {
+        "tags": [
+          "Blog"
+        ],
+        "summary": "获取目录树",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "description": "指定路径, 只显示该路径下的内容. 默认 当前路径",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "depth",
+            "in": "query",
+            "description": "指定深度, 0表示不限制深度",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "object",
+              "description": "TODO, 找一种好的展示/存储方式"
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/find": {
+      "get": {
+        "tags": [
+          "Blog"
+        ],
+        "summary": "查找文件, 在所有目录下查找",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "description": "指定路径, 只显示该路径下的内容. 默认 当前路径",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "author_id",
+            "in": "query",
+            "description": "根据作者id筛选",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "模糊匹配title",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "返回条数的上线, 默认30",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "description": "返回总数, 不得大于 limit",
+                  "example": 30
+                },
+                "articles": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Article"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Author": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "Article": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "url": {
+          "type": "string",
+          "description": "文章的存储url地址, 请求此地址获取文章那个"
+        },
+        "name": {
+          "type": "string"
+        },
+        "author": {
+          "$ref": "#/definitions/Author"
+        },
+        "path": {
+          "type": "string"
+        },
+        "score": {
+          "type": "integer"
+        },
+        "visited": {
+          "type": "integer"
+        },
+        "created_at": {
+          "type": "integer",
+          "description": "时间戳"
+        },
+        "updated_at": {
+          "type": "integer",
+          "description": "时间戳"
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "详情",
+    "url": "https://github.com/xgxw/"
+  }
+}

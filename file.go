@@ -2,28 +2,27 @@ package xgxw
 
 import (
 	"context"
-
-	"github.com/xgxw/foundation-go/storage"
+	"time"
 )
 
-// File is ...
-type File struct {
-	FileID   string `json:"fid" gorm:"column:fid"`
-	Name     string `json:"name" gorm:"column:name"`
-	Content  string `json:"content" gorm:"column:content"`
-	UpdateAt string `json:"update_at" gorm:"column:update_at"`
+type (
+	File struct {
+		ID   int64  `gorm:"column:id" json:"id"`
+		Name string `gorm:"column:name" json:"name"`
+		URL  string `gorm:"column:url" json:"url"`
+
+		CreatedAt time.Time  `gorm:"column:created_at" json:"created_at"`
+		UpdatedAt time.Time  `gorm:"column:updated_at" json:"updated_at"`
+		DeletedAt *time.Time `gorm:"column:deleted_at" json:"-"`
+	}
+)
+
+func (File) TableName() string {
+	return "files"
 }
 
-// FileService is ...
 type FileService interface {
-	Get(ctx context.Context, fid string) (todo *File, err error)
-	// 先作成常量的, 后续改为可以diff的.
-	Put(ctx context.Context, fid, content string) (err error)
-	// Del is 删除文件
-	Del(ctx context.Context, fid string) (err error)
-	// DelFiles is 删除多个文件
-	DelFiles(ctx context.Context, fids []string) (err error)
-	// GetCatalog is 获取文件列表, 返回目录树的json字符串
-	GetCatalog(ctx context.Context, path string, opts storage.ListOption) (catalog string, paths []string, err error)
-	SignURL(ctx context.Context, fid string, method storage.HTTPMethod, expiredInSec int64) (url string, err error)
+	Save(ctx context.Context, name string, data []byte) (f *File, err error)
+	Get(ctx context.Context, id int64) (f *File, err error)
+	//Delete(ctx context.Context, id int64) (err error)
 }
